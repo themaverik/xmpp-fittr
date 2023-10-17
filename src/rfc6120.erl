@@ -712,7 +712,8 @@ tags() ->
      {<<"iq">>, <<"jabber:server">>},
      {<<"iq">>, <<"jabber:component:accept">>}].
 
-do_encode({iq, _, _, _, _, _, _, _} = Iq, TopXMLNS) ->
+do_encode({iq, _, _, _, _, _, _, _, _} = Iq,
+          TopXMLNS) ->
     encode_iq(Iq, TopXMLNS);
 do_encode({message_thread, _, _} = Thread, TopXMLNS) ->
     encode_message_thread(Thread, TopXMLNS);
@@ -728,7 +729,7 @@ do_encode({gone, _} = Gone, TopXMLNS) ->
     encode_error_gone(Gone, TopXMLNS);
 do_encode({redirect, _} = Redirect, TopXMLNS) ->
     encode_error_redirect(Redirect, TopXMLNS);
-do_encode({stanza_error, _, _, _, _, _} = Error,
+do_encode({stanza_error, _, _, _, _, _, _} = Error,
           TopXMLNS) ->
     encode_error(Error, TopXMLNS);
 do_encode({bind, _, _} = Bind, TopXMLNS) ->
@@ -773,7 +774,7 @@ do_encode({stream_start, _, _, _, _, _, _, _, _} =
 
 do_get_name({bind, _, _}) -> <<"bind">>;
 do_get_name({gone, _}) -> <<"gone">>;
-do_get_name({iq, _, _, _, _, _, _, _}) -> <<"iq">>;
+do_get_name({iq, _, _, _, _, _, _, _, _}) -> <<"iq">>;
 do_get_name({message, _, _, _, _, _, _, _, _, _, _}) ->
     <<"message">>;
 do_get_name({message_thread, _, _}) -> <<"thread">>;
@@ -789,7 +790,7 @@ do_get_name({sasl_response, _}) -> <<"response">>;
 do_get_name({sasl_success, _}) -> <<"success">>;
 do_get_name({'see-other-host', _}) ->
     <<"see-other-host">>;
-do_get_name({stanza_error, _, _, _, _, _}) ->
+do_get_name({stanza_error, _, _, _, _, _, _}) ->
     <<"error">>;
 do_get_name({starttls, _}) -> <<"starttls">>;
 do_get_name({starttls_failure}) -> <<"failure">>;
@@ -805,7 +806,7 @@ do_get_ns({bind, _, _}) ->
     <<"urn:ietf:params:xml:ns:xmpp-bind">>;
 do_get_ns({gone, _}) ->
     <<"urn:ietf:params:xml:ns:xmpp-stanzas">>;
-do_get_ns({iq, _, _, _, _, _, _, _}) ->
+do_get_ns({iq, _, _, _, _, _, _, _, _}) ->
     <<"jabber:client">>;
 do_get_ns({message, _, _, _, _, _, _, _, _, _, _}) ->
     <<"jabber:client">>;
@@ -831,7 +832,7 @@ do_get_ns({sasl_success, _}) ->
     <<"urn:ietf:params:xml:ns:xmpp-sasl">>;
 do_get_ns({'see-other-host', _}) ->
     <<"urn:ietf:params:xml:ns:xmpp-streams">>;
-do_get_ns({stanza_error, _, _, _, _, _}) ->
+do_get_ns({stanza_error, _, _, _, _, _, _}) ->
     <<"jabber:client">>;
 do_get_ns({starttls, _}) ->
     <<"urn:ietf:params:xml:ns:xmpp-tls">>;
@@ -849,6 +850,7 @@ get_els({iq,
          _type,
          _lang,
          _from,
+         _from_jid,
          _to,
          _sub_els,
          _meta}) ->
@@ -879,6 +881,7 @@ get_els({presence,
     _sub_els;
 get_els({stanza_error,
          _type,
+         _code,
          _by,
          _reason,
          _text,
@@ -886,9 +889,25 @@ get_els({stanza_error,
     _sub_els;
 get_els({stream_features, _sub_els}) -> _sub_els.
 
-set_els({iq, _id, _type, _lang, _from, _to, _, _meta},
+set_els({iq,
+         _id,
+         _type,
+         _lang,
+         _from,
+         _from_jid,
+         _to,
+         _,
+         _meta},
         _sub_els) ->
-    {iq, _id, _type, _lang, _from, _to, _sub_els, _meta};
+    {iq,
+     _id,
+     _type,
+     _lang,
+     _from,
+     _from_jid,
+     _to,
+     _sub_els,
+     _meta};
 set_els({message,
          _id,
          _type,
@@ -935,13 +954,26 @@ set_els({presence,
      _priority,
      _sub_els,
      _meta};
-set_els({stanza_error, _type, _by, _reason, _text, _},
+set_els({stanza_error,
+         _type,
+         _code,
+         _by,
+         _reason,
+         _text,
+         _},
         _sub_els) ->
-    {stanza_error, _type, _by, _reason, _text, _sub_els};
+    {stanza_error,
+     _type,
+     _code,
+     _by,
+     _reason,
+     _text,
+     _sub_els};
 set_els({stream_features, _}, _sub_els) ->
     {stream_features, _sub_els}.
 
-pp(iq, 7) -> [id, type, lang, from, to, sub_els, meta];
+pp(iq, 8) ->
+    [id, type, lang, from, from_jid, to, sub_els, meta];
 pp(message_thread, 2) -> [parent, data];
 pp(message, 10) ->
     [id,
@@ -967,8 +999,8 @@ pp(presence, 10) ->
      meta];
 pp(gone, 1) -> [uri];
 pp(redirect, 1) -> [uri];
-pp(stanza_error, 5) ->
-    [type, by, reason, text, sub_els];
+pp(stanza_error, 6) ->
+    [type, code, by, reason, text, sub_els];
 pp(bind, 2) -> [jid, resource];
 pp(sasl_auth, 2) -> [mechanism, text];
 pp(sasl_abort, 0) -> [];
@@ -996,13 +1028,13 @@ pp(stream_start, 8) ->
 pp(_, _) -> no.
 
 records() ->
-    [{iq, 7},
+    [{iq, 8},
      {message_thread, 2},
      {message, 10},
      {presence, 10},
      {gone, 1},
      {redirect, 1},
-     {stanza_error, 5},
+     {stanza_error, 6},
      {bind, 2},
      {sasl_auth, 2},
      {sasl_abort, 0},
@@ -4124,11 +4156,12 @@ decode_error(__TopXMLNS, __Opts,
                                              [],
                                              undefined,
                                              []),
-    {Type, By} = decode_error_attrs(__TopXMLNS,
-                                    _attrs,
-                                    undefined,
-                                    undefined),
-    {stanza_error, Type, By, Reason, Text, __Els}.
+    {Type, Code, By} = decode_error_attrs(__TopXMLNS,
+                                          _attrs,
+                                          undefined,
+                                          undefined,
+                                          undefined),
+    {stanza_error, Type, Code, By, Reason, Text, __Els}.
 
 decode_error_els(__TopXMLNS, __Opts, [], Text, Reason,
                  __Els) ->
@@ -4766,20 +4799,29 @@ decode_error_els(__TopXMLNS, __Opts, [_ | _els], Text,
                      __Els).
 
 decode_error_attrs(__TopXMLNS,
-                   [{<<"type">>, _val} | _attrs], _Type, By) ->
-    decode_error_attrs(__TopXMLNS, _attrs, _val, By);
+                   [{<<"type">>, _val} | _attrs], _Type, Code, By) ->
+    decode_error_attrs(__TopXMLNS, _attrs, _val, Code, By);
 decode_error_attrs(__TopXMLNS,
-                   [{<<"by">>, _val} | _attrs], Type, _By) ->
-    decode_error_attrs(__TopXMLNS, _attrs, Type, _val);
-decode_error_attrs(__TopXMLNS, [_ | _attrs], Type,
+                   [{<<"code">>, _val} | _attrs], Type, _Code, By) ->
+    decode_error_attrs(__TopXMLNS, _attrs, Type, _val, By);
+decode_error_attrs(__TopXMLNS,
+                   [{<<"by">>, _val} | _attrs], Type, Code, _By) ->
+    decode_error_attrs(__TopXMLNS,
+                       _attrs,
+                       Type,
+                       Code,
+                       _val);
+decode_error_attrs(__TopXMLNS, [_ | _attrs], Type, Code,
                    By) ->
-    decode_error_attrs(__TopXMLNS, _attrs, Type, By);
-decode_error_attrs(__TopXMLNS, [], Type, By) ->
+    decode_error_attrs(__TopXMLNS, _attrs, Type, Code, By);
+decode_error_attrs(__TopXMLNS, [], Type, Code, By) ->
     {decode_error_attr_type(__TopXMLNS, Type),
+     decode_error_attr_code(__TopXMLNS, Code),
      decode_error_attr_by(__TopXMLNS, By)}.
 
 encode_error({stanza_error,
               Type,
+              Code,
               By,
               Reason,
               Text,
@@ -4799,9 +4841,10 @@ encode_error({stanza_error,
                                                                          __NewTopXMLNS,
                                                                          []))),
     _attrs = encode_error_attr_by(By,
-                                  encode_error_attr_type(Type,
-                                                         xmpp_codec:enc_xmlns_attrs(__NewTopXMLNS,
-                                                                                    __TopXMLNS))),
+                                  encode_error_attr_code(Code,
+                                                         encode_error_attr_type(Type,
+                                                                                xmpp_codec:enc_xmlns_attrs(__NewTopXMLNS,
+                                                                                                           __TopXMLNS)))),
     {xmlel, <<"error">>, _attrs, _els}.
 
 'encode_error_$text'([], __TopXMLNS, _acc) -> _acc;
@@ -4920,6 +4963,23 @@ decode_error_attr_type(__TopXMLNS, _val) ->
 
 encode_error_attr_type(_val, _acc) ->
     [{<<"type">>, enc_enum(_val)} | _acc].
+
+decode_error_attr_code(__TopXMLNS, undefined) ->
+    undefined;
+decode_error_attr_code(__TopXMLNS, _val) ->
+    case catch dec_int(_val, 0, infinity) of
+        {'EXIT', _} ->
+            erlang:error({xmpp_codec,
+                          {bad_attr_value,
+                           <<"code">>,
+                           <<"error">>,
+                           __TopXMLNS}});
+        _res -> _res
+    end.
+
+encode_error_attr_code(undefined, _acc) -> _acc;
+encode_error_attr_code(_val, _acc) ->
+    [{<<"code">>, enc_int(_val)} | _acc].
 
 decode_error_attr_by(__TopXMLNS, undefined) ->
     undefined;
@@ -6676,14 +6736,16 @@ encode_message_subject_cdata(_val, _acc) ->
 decode_iq(__TopXMLNS, __Opts,
           {xmlel, <<"iq">>, _attrs, _els}) ->
     __Els = decode_iq_els(__TopXMLNS, __Opts, _els, []),
-    {Id, Type, From, To, Lang} = decode_iq_attrs(__TopXMLNS,
-                                                 _attrs,
-                                                 undefined,
-                                                 undefined,
-                                                 undefined,
-                                                 undefined,
-                                                 undefined),
-    {iq, Id, Type, Lang, From, To, __Els, #{}}.
+    {Id, Type, From, From_jid, To, Lang} =
+        decode_iq_attrs(__TopXMLNS,
+                        _attrs,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined),
+    {iq, Id, Type, Lang, From, From_jid, To, __Els, #{}}.
 
 decode_iq_els(__TopXMLNS, __Opts, [], __Els) ->
     lists:reverse(__Els);
@@ -6711,71 +6773,97 @@ decode_iq_els(__TopXMLNS, __Opts, [_ | _els], __Els) ->
     decode_iq_els(__TopXMLNS, __Opts, _els, __Els).
 
 decode_iq_attrs(__TopXMLNS, [{<<"id">>, _val} | _attrs],
-                _Id, Type, From, To, Lang) ->
+                _Id, Type, From, From_jid, To, Lang) ->
     decode_iq_attrs(__TopXMLNS,
                     _attrs,
                     _val,
                     Type,
                     From,
+                    From_jid,
                     To,
                     Lang);
 decode_iq_attrs(__TopXMLNS,
-                [{<<"type">>, _val} | _attrs], Id, _Type, From, To,
-                Lang) ->
+                [{<<"type">>, _val} | _attrs], Id, _Type, From,
+                From_jid, To, Lang) ->
     decode_iq_attrs(__TopXMLNS,
                     _attrs,
                     Id,
                     _val,
                     From,
+                    From_jid,
                     To,
                     Lang);
 decode_iq_attrs(__TopXMLNS,
-                [{<<"from">>, _val} | _attrs], Id, Type, _From, To,
-                Lang) ->
+                [{<<"from">>, _val} | _attrs], Id, Type, _From,
+                From_jid, To, Lang) ->
     decode_iq_attrs(__TopXMLNS,
                     _attrs,
                     Id,
                     Type,
+                    _val,
+                    From_jid,
+                    To,
+                    Lang);
+decode_iq_attrs(__TopXMLNS,
+                [{<<"from_jid">>, _val} | _attrs], Id, Type, From,
+                _From_jid, To, Lang) ->
+    decode_iq_attrs(__TopXMLNS,
+                    _attrs,
+                    Id,
+                    Type,
+                    From,
                     _val,
                     To,
                     Lang);
 decode_iq_attrs(__TopXMLNS, [{<<"to">>, _val} | _attrs],
-                Id, Type, From, _To, Lang) ->
+                Id, Type, From, From_jid, _To, Lang) ->
     decode_iq_attrs(__TopXMLNS,
                     _attrs,
                     Id,
                     Type,
                     From,
+                    From_jid,
                     _val,
                     Lang);
 decode_iq_attrs(__TopXMLNS,
-                [{<<"xml:lang">>, _val} | _attrs], Id, Type, From, To,
-                _Lang) ->
+                [{<<"xml:lang">>, _val} | _attrs], Id, Type, From,
+                From_jid, To, _Lang) ->
     decode_iq_attrs(__TopXMLNS,
                     _attrs,
                     Id,
                     Type,
                     From,
+                    From_jid,
                     To,
                     _val);
 decode_iq_attrs(__TopXMLNS, [_ | _attrs], Id, Type,
-                From, To, Lang) ->
+                From, From_jid, To, Lang) ->
     decode_iq_attrs(__TopXMLNS,
                     _attrs,
                     Id,
                     Type,
                     From,
+                    From_jid,
                     To,
                     Lang);
-decode_iq_attrs(__TopXMLNS, [], Id, Type, From, To,
-                Lang) ->
+decode_iq_attrs(__TopXMLNS, [], Id, Type, From,
+                From_jid, To, Lang) ->
     {decode_iq_attr_id(__TopXMLNS, Id),
      decode_iq_attr_type(__TopXMLNS, Type),
      decode_iq_attr_from(__TopXMLNS, From),
+     decode_iq_attr_from_jid(__TopXMLNS, From_jid),
      decode_iq_attr_to(__TopXMLNS, To),
      'decode_iq_attr_xml:lang'(__TopXMLNS, Lang)}.
 
-encode_iq({iq, Id, Type, Lang, From, To, __Els, _},
+encode_iq({iq,
+           Id,
+           Type,
+           Lang,
+           From,
+           From_jid,
+           To,
+           __Els,
+           _},
           __TopXMLNS) ->
     __NewTopXMLNS = xmpp_codec:choose_top_xmlns(<<>>,
                                                 [<<"jabber:client">>,
@@ -6786,11 +6874,12 @@ encode_iq({iq, Id, Type, Lang, From, To, __Els, _},
             || _el <- __Els],
     _attrs = 'encode_iq_attr_xml:lang'(Lang,
                                        encode_iq_attr_to(To,
-                                                         encode_iq_attr_from(From,
-                                                                             encode_iq_attr_type(Type,
-                                                                                                 encode_iq_attr_id(Id,
-                                                                                                                   xmpp_codec:enc_xmlns_attrs(__NewTopXMLNS,
-                                                                                                                                              __TopXMLNS)))))),
+                                                         encode_iq_attr_from_jid(From_jid,
+                                                                                 encode_iq_attr_from(From,
+                                                                                                     encode_iq_attr_type(Type,
+                                                                                                                         encode_iq_attr_id(Id,
+                                                                                                                                           xmpp_codec:enc_xmlns_attrs(__NewTopXMLNS,
+                                                                                                                                                                      __TopXMLNS))))))),
     {xmlel, <<"iq">>, _attrs, _els}.
 
 decode_iq_attr_id(__TopXMLNS, undefined) ->
@@ -6827,6 +6916,23 @@ decode_iq_attr_from(__TopXMLNS, _val) ->
 encode_iq_attr_from(undefined, _acc) -> _acc;
 encode_iq_attr_from(_val, _acc) ->
     [{<<"from">>, jid:encode(_val)} | _acc].
+
+decode_iq_attr_from_jid(__TopXMLNS, undefined) ->
+    undefined;
+decode_iq_attr_from_jid(__TopXMLNS, _val) ->
+    case catch jid:decode(_val) of
+        {'EXIT', _} ->
+            erlang:error({xmpp_codec,
+                          {bad_attr_value,
+                           <<"from_jid">>,
+                           <<"iq">>,
+                           __TopXMLNS}});
+        _res -> _res
+    end.
+
+encode_iq_attr_from_jid(undefined, _acc) -> _acc;
+encode_iq_attr_from_jid(_val, _acc) ->
+    [{<<"from_jid">>, jid:encode(_val)} | _acc].
 
 decode_iq_attr_to(__TopXMLNS, undefined) -> undefined;
 decode_iq_attr_to(__TopXMLNS, _val) ->

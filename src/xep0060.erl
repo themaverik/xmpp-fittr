@@ -510,7 +510,8 @@ do_encode({ps_affiliation, <<>>, _, _, _} = Affiliation,
           TopXMLNS =
               <<"http://jabber.org/protocol/pubsub#owner">>) ->
     encode_pubsub_owner_affiliation(Affiliation, TopXMLNS);
-do_encode({ps_item, _, _, _, _, _} = Item, TopXMLNS) ->
+do_encode({ps_item, _, _, _, _, _, _, _} = Item,
+          TopXMLNS) ->
     encode_pubsub_item(Item, TopXMLNS);
 do_encode({ps_items, _, _, _, _, _, _} = Items,
           TopXMLNS) ->
@@ -718,7 +719,8 @@ do_get_name({ps_error,
     <<"unsupported-access-model">>;
 do_get_name({ps_event, _, _, _, _, _, _}) ->
     <<"event">>;
-do_get_name({ps_item, _, _, _, _, _}) -> <<"item">>;
+do_get_name({ps_item, _, _, _, _, _, _, _}) ->
+    <<"item">>;
 do_get_name({ps_items, _, _, _, _, _, _}) ->
     <<"items">>;
 do_get_name({ps_options, _, _, _, _}) -> <<"options">>;
@@ -801,7 +803,7 @@ do_get_ns({ps_error, 'unsupported-access-model', _}) ->
     <<"http://jabber.org/protocol/pubsub#errors">>;
 do_get_ns({ps_event, _, _, _, _, _, _}) ->
     <<"http://jabber.org/protocol/pubsub#event">>;
-do_get_ns({ps_item, Xmlns, _, _, _, _}) -> Xmlns;
+do_get_ns({ps_item, Xmlns, _, _, _, _, _, _}) -> Xmlns;
 do_get_ns({ps_items, Xmlns, _, _, _, _, _}) -> Xmlns;
 do_get_ns({ps_options, _, _, _, _}) ->
     <<"http://jabber.org/protocol/pubsub">>;
@@ -841,17 +843,40 @@ get_els({ps_item,
          _id,
          _sub_els,
          _node,
-         _publisher}) ->
+         _publisher,
+         _usernick,
+         _sendernick}) ->
     _sub_els.
 
-set_els({ps_item, _xmlns, _id, _, _node, _publisher},
+set_els({ps_item,
+         _xmlns,
+         _id,
+         _,
+         _node,
+         _publisher,
+         _usernick,
+         _sendernick},
         _sub_els) ->
-    {ps_item, _xmlns, _id, _sub_els, _node, _publisher}.
+    {ps_item,
+     _xmlns,
+     _id,
+     _sub_els,
+     _node,
+     _publisher,
+     _usernick,
+     _sendernick}.
 
 pp(ps_subscription, 6) ->
     [xmlns, jid, type, node, subid, expiry];
 pp(ps_affiliation, 4) -> [xmlns, node, type, jid];
-pp(ps_item, 5) -> [xmlns, id, sub_els, node, publisher];
+pp(ps_item, 7) ->
+    [xmlns,
+     id,
+     sub_els,
+     node,
+     publisher,
+     usernick,
+     sendernick];
 pp(ps_items, 6) ->
     [xmlns, node, items, max_items, subid, retract];
 pp(ps_event, 6) ->
@@ -896,7 +921,7 @@ pp(_, _) -> no.
 records() ->
     [{ps_subscription, 6},
      {ps_affiliation, 4},
-     {ps_item, 5},
+     {ps_item, 7},
      {ps_items, 6},
      {ps_event, 6},
      {ps_subscribe, 2},
@@ -5131,14 +5156,23 @@ decode_pubsub_item(__TopXMLNS, __Opts,
                                    __Opts,
                                    _els,
                                    []),
-    {Id, Xmlns, Node, Publisher} =
+    {Id, Xmlns, Node, Usernick, Sendernick, Publisher} =
         decode_pubsub_item_attrs(__TopXMLNS,
                                  _attrs,
                                  undefined,
                                  undefined,
                                  undefined,
+                                 undefined,
+                                 undefined,
                                  undefined),
-    {ps_item, Xmlns, Id, __Els, Node, Publisher}.
+    {ps_item,
+     Xmlns,
+     Id,
+     __Els,
+     Node,
+     Publisher,
+     Usernick,
+     Sendernick}.
 
 decode_pubsub_item_els(__TopXMLNS, __Opts, [], __Els) ->
     lists:reverse(__Els);
@@ -5154,53 +5188,88 @@ decode_pubsub_item_els(__TopXMLNS, __Opts, [_ | _els],
 
 decode_pubsub_item_attrs(__TopXMLNS,
                          [{<<"id">>, _val} | _attrs], _Id, Xmlns, Node,
-                         Publisher) ->
+                         Usernick, Sendernick, Publisher) ->
     decode_pubsub_item_attrs(__TopXMLNS,
                              _attrs,
                              _val,
                              Xmlns,
                              Node,
+                             Usernick,
+                             Sendernick,
                              Publisher);
 decode_pubsub_item_attrs(__TopXMLNS,
                          [{<<"xmlns">>, _val} | _attrs], Id, _Xmlns, Node,
-                         Publisher) ->
+                         Usernick, Sendernick, Publisher) ->
     decode_pubsub_item_attrs(__TopXMLNS,
                              _attrs,
                              Id,
                              _val,
                              Node,
+                             Usernick,
+                             Sendernick,
                              Publisher);
 decode_pubsub_item_attrs(__TopXMLNS,
                          [{<<"node">>, _val} | _attrs], Id, Xmlns, _Node,
-                         Publisher) ->
+                         Usernick, Sendernick, Publisher) ->
     decode_pubsub_item_attrs(__TopXMLNS,
                              _attrs,
                              Id,
                              Xmlns,
+                             _val,
+                             Usernick,
+                             Sendernick,
+                             Publisher);
+decode_pubsub_item_attrs(__TopXMLNS,
+                         [{<<"usernick">>, _val} | _attrs], Id, Xmlns, Node,
+                         _Usernick, Sendernick, Publisher) ->
+    decode_pubsub_item_attrs(__TopXMLNS,
+                             _attrs,
+                             Id,
+                             Xmlns,
+                             Node,
+                             _val,
+                             Sendernick,
+                             Publisher);
+decode_pubsub_item_attrs(__TopXMLNS,
+                         [{<<"sendernick">>, _val} | _attrs], Id, Xmlns, Node,
+                         Usernick, _Sendernick, Publisher) ->
+    decode_pubsub_item_attrs(__TopXMLNS,
+                             _attrs,
+                             Id,
+                             Xmlns,
+                             Node,
+                             Usernick,
                              _val,
                              Publisher);
 decode_pubsub_item_attrs(__TopXMLNS,
                          [{<<"publisher">>, _val} | _attrs], Id, Xmlns, Node,
-                         _Publisher) ->
+                         Usernick, Sendernick, _Publisher) ->
     decode_pubsub_item_attrs(__TopXMLNS,
                              _attrs,
                              Id,
                              Xmlns,
                              Node,
+                             Usernick,
+                             Sendernick,
                              _val);
 decode_pubsub_item_attrs(__TopXMLNS, [_ | _attrs], Id,
-                         Xmlns, Node, Publisher) ->
+                         Xmlns, Node, Usernick, Sendernick, Publisher) ->
     decode_pubsub_item_attrs(__TopXMLNS,
                              _attrs,
                              Id,
                              Xmlns,
                              Node,
+                             Usernick,
+                             Sendernick,
                              Publisher);
 decode_pubsub_item_attrs(__TopXMLNS, [], Id, Xmlns,
-                         Node, Publisher) ->
+                         Node, Usernick, Sendernick, Publisher) ->
     {decode_pubsub_item_attr_id(__TopXMLNS, Id),
      decode_pubsub_item_attr_xmlns(__TopXMLNS, Xmlns),
      decode_pubsub_item_attr_node(__TopXMLNS, Node),
+     decode_pubsub_item_attr_usernick(__TopXMLNS, Usernick),
+     decode_pubsub_item_attr_sendernick(__TopXMLNS,
+                                        Sendernick),
      decode_pubsub_item_attr_publisher(__TopXMLNS,
                                        Publisher)}.
 
@@ -5209,7 +5278,9 @@ encode_pubsub_item({ps_item,
                     Id,
                     __Els,
                     Node,
-                    Publisher},
+                    Publisher,
+                    Usernick,
+                    Sendernick},
                    __TopXMLNS) ->
     __NewTopXMLNS = xmpp_codec:choose_top_xmlns(Xmlns,
                                                 [<<"http://jabber.org/protocol/pubsub">>,
@@ -5218,10 +5289,12 @@ encode_pubsub_item({ps_item,
     _els = [xmpp_codec:encode(_el, __NewTopXMLNS)
             || _el <- __Els],
     _attrs = encode_pubsub_item_attr_publisher(Publisher,
-                                               encode_pubsub_item_attr_node(Node,
-                                                                            encode_pubsub_item_attr_id(Id,
-                                                                                                       xmpp_codec:enc_xmlns_attrs(__NewTopXMLNS,
-                                                                                                                                  __TopXMLNS)))),
+                                               encode_pubsub_item_attr_sendernick(Sendernick,
+                                                                                  encode_pubsub_item_attr_usernick(Usernick,
+                                                                                                                   encode_pubsub_item_attr_node(Node,
+                                                                                                                                                encode_pubsub_item_attr_id(Id,
+                                                                                                                                                                           xmpp_codec:enc_xmlns_attrs(__NewTopXMLNS,
+                                                                                                                                                                                                      __TopXMLNS)))))),
     {xmlel, <<"item">>, _attrs, _els}.
 
 decode_pubsub_item_attr_id(__TopXMLNS, undefined) ->
@@ -5243,6 +5316,26 @@ decode_pubsub_item_attr_node(__TopXMLNS, _val) -> _val.
 encode_pubsub_item_attr_node(<<>>, _acc) -> _acc;
 encode_pubsub_item_attr_node(_val, _acc) ->
     [{<<"node">>, _val} | _acc].
+
+decode_pubsub_item_attr_usernick(__TopXMLNS,
+                                 undefined) ->
+    <<>>;
+decode_pubsub_item_attr_usernick(__TopXMLNS, _val) ->
+    _val.
+
+encode_pubsub_item_attr_usernick(<<>>, _acc) -> _acc;
+encode_pubsub_item_attr_usernick(_val, _acc) ->
+    [{<<"usernick">>, _val} | _acc].
+
+decode_pubsub_item_attr_sendernick(__TopXMLNS,
+                                   undefined) ->
+    <<>>;
+decode_pubsub_item_attr_sendernick(__TopXMLNS, _val) ->
+    _val.
+
+encode_pubsub_item_attr_sendernick(<<>>, _acc) -> _acc;
+encode_pubsub_item_attr_sendernick(_val, _acc) ->
+    [{<<"sendernick">>, _val} | _acc].
 
 decode_pubsub_item_attr_publisher(__TopXMLNS,
                                   undefined) ->

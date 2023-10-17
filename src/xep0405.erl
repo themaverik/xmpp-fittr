@@ -48,7 +48,7 @@ tags() ->
      {<<"client-join">>, <<"urn:xmpp:mix:pam:0">>},
      {<<"client-join">>, <<"urn:xmpp:mix:pam:2">>}].
 
-do_encode({mix_client_join, _, _, _} = Client_join,
+do_encode({mix_client_join, _, _, _, _} = Client_join,
           TopXMLNS) ->
     encode_mix_client_join(Client_join, TopXMLNS);
 do_encode({mix_client_leave, _, _, _} = Client_leave,
@@ -58,24 +58,25 @@ do_encode({mix_roster_channel, _} = Channel,
           TopXMLNS) ->
     encode_mix_roster_channel(Channel, TopXMLNS).
 
-do_get_name({mix_client_join, _, _, _}) ->
+do_get_name({mix_client_join, _, _, _, _}) ->
     <<"client-join">>;
 do_get_name({mix_client_leave, _, _, _}) ->
     <<"client-leave">>;
 do_get_name({mix_roster_channel, _}) -> <<"channel">>.
 
-do_get_ns({mix_client_join, _, _, Xmlns}) -> Xmlns;
+do_get_ns({mix_client_join, _, _, Xmlns, _}) -> Xmlns;
 do_get_ns({mix_client_leave, _, _, Xmlns}) -> Xmlns;
 do_get_ns({mix_roster_channel, _}) ->
     <<"urn:xmpp:mix:roster:0">>.
 
-pp(mix_client_join, 3) -> [channel, join, xmlns];
+pp(mix_client_join, 4) ->
+    [channel, join, xmlns, affiliation];
 pp(mix_client_leave, 3) -> [channel, leave, xmlns];
 pp(mix_roster_channel, 1) -> [participant_id];
 pp(_, _) -> no.
 
 records() ->
-    [{mix_client_join, 3},
+    [{mix_client_join, 4},
      {mix_client_leave, 3},
      {mix_roster_channel, 1}].
 
@@ -283,12 +284,13 @@ decode_mix_client_join(__TopXMLNS, __Opts,
                                       __Opts,
                                       _els,
                                       error),
-    {Channel, Xmlns} =
+    {Affiliation, Channel, Xmlns} =
         decode_mix_client_join_attrs(__TopXMLNS,
                                      _attrs,
                                      undefined,
+                                     undefined,
                                      undefined),
-    {mix_client_join, Channel, Join, Xmlns}.
+    {mix_client_join, Channel, Join, Xmlns, Affiliation}.
 
 decode_mix_client_join_els(__TopXMLNS, __Opts, [],
                            Join) ->
@@ -335,34 +337,49 @@ decode_mix_client_join_els(__TopXMLNS, __Opts,
                                Join).
 
 decode_mix_client_join_attrs(__TopXMLNS,
-                             [{<<"channel">>, _val} | _attrs], _Channel,
-                             Xmlns) ->
-    decode_mix_client_join_attrs(__TopXMLNS,
-                                 _attrs,
-                                 _val,
-                                 Xmlns);
-decode_mix_client_join_attrs(__TopXMLNS,
-                             [{<<"xmlns">>, _val} | _attrs], Channel, _Xmlns) ->
-    decode_mix_client_join_attrs(__TopXMLNS,
-                                 _attrs,
-                                 Channel,
-                                 _val);
-decode_mix_client_join_attrs(__TopXMLNS, [_ | _attrs],
+                             [{<<"affiliation">>, _val} | _attrs], _Affiliation,
                              Channel, Xmlns) ->
     decode_mix_client_join_attrs(__TopXMLNS,
                                  _attrs,
+                                 _val,
                                  Channel,
                                  Xmlns);
-decode_mix_client_join_attrs(__TopXMLNS, [], Channel,
-                             Xmlns) ->
-    {decode_mix_client_join_attr_channel(__TopXMLNS,
+decode_mix_client_join_attrs(__TopXMLNS,
+                             [{<<"channel">>, _val} | _attrs], Affiliation,
+                             _Channel, Xmlns) ->
+    decode_mix_client_join_attrs(__TopXMLNS,
+                                 _attrs,
+                                 Affiliation,
+                                 _val,
+                                 Xmlns);
+decode_mix_client_join_attrs(__TopXMLNS,
+                             [{<<"xmlns">>, _val} | _attrs], Affiliation,
+                             Channel, _Xmlns) ->
+    decode_mix_client_join_attrs(__TopXMLNS,
+                                 _attrs,
+                                 Affiliation,
+                                 Channel,
+                                 _val);
+decode_mix_client_join_attrs(__TopXMLNS, [_ | _attrs],
+                             Affiliation, Channel, Xmlns) ->
+    decode_mix_client_join_attrs(__TopXMLNS,
+                                 _attrs,
+                                 Affiliation,
+                                 Channel,
+                                 Xmlns);
+decode_mix_client_join_attrs(__TopXMLNS, [],
+                             Affiliation, Channel, Xmlns) ->
+    {decode_mix_client_join_attr_affiliation(__TopXMLNS,
+                                             Affiliation),
+     decode_mix_client_join_attr_channel(__TopXMLNS,
                                          Channel),
      decode_mix_client_join_attr_xmlns(__TopXMLNS, Xmlns)}.
 
 encode_mix_client_join({mix_client_join,
                         Channel,
                         Join,
-                        Xmlns},
+                        Xmlns,
+                        Affiliation},
                        __TopXMLNS) ->
     __NewTopXMLNS = xmpp_codec:choose_top_xmlns(Xmlns,
                                                 [<<"urn:xmpp:mix:pam:0">>,
@@ -373,13 +390,26 @@ encode_mix_client_join({mix_client_join,
                                                      __NewTopXMLNS,
                                                      [])),
     _attrs = encode_mix_client_join_attr_channel(Channel,
-                                                 xmpp_codec:enc_xmlns_attrs(__NewTopXMLNS,
-                                                                            __TopXMLNS)),
+                                                 encode_mix_client_join_attr_affiliation(Affiliation,
+                                                                                         xmpp_codec:enc_xmlns_attrs(__NewTopXMLNS,
+                                                                                                                    __TopXMLNS))),
     {xmlel, <<"client-join">>, _attrs, _els}.
 
 'encode_mix_client_join_$join'(Join, __TopXMLNS,
                                _acc) ->
     [xep0369:encode_mix_join(Join, __TopXMLNS) | _acc].
+
+decode_mix_client_join_attr_affiliation(__TopXMLNS,
+                                        undefined) ->
+    <<>>;
+decode_mix_client_join_attr_affiliation(__TopXMLNS,
+                                        _val) ->
+    _val.
+
+encode_mix_client_join_attr_affiliation(<<>>, _acc) ->
+    _acc;
+encode_mix_client_join_attr_affiliation(_val, _acc) ->
+    [{<<"affiliation">>, _val} | _acc].
 
 decode_mix_client_join_attr_channel(__TopXMLNS,
                                     undefined) ->

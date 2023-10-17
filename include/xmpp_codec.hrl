@@ -15,6 +15,7 @@
              type :: iq_type(),
              lang = <<>> :: binary(),
              from :: undefined | jid:jid(),
+             from_jid :: undefined | jid:jid(),
              to :: undefined | jid:jid(),
              sub_els = [] :: [xmpp_element() | fxml:xmlel()],
 	     meta = #{} :: map()}).
@@ -108,6 +109,10 @@
 -type xmpp_host() :: binary() | inet:ip_address() |
 		     {binary() | inet:ip_address(), inet:port_number()}.
 
+-record(timestampmsg, {id = <<>> :: binary(),
+                       time = <<>> :: binary()}).
+-type timestampmsg() :: #timestampmsg{}.
+
 -record(avatar_data, {data = <<>> :: binary()}).
 -type avatar_data() :: #avatar_data{}.
 
@@ -125,6 +130,53 @@
 -record(sasl_success, {text = <<>> :: binary()}).
 -type sasl_success() :: #sasl_success{}.
 
+-record(media_call_activities, {type = <<>> :: binary(),
+                                status = <<>> :: binary(),
+                                call_status = <<>> :: binary(),
+                                start_time = <<>> :: binary(),
+                                call_mode = <<>> :: binary(),
+                                call_from = <<>> :: binary(),
+                                call_time = <<>> :: binary(),
+                                call_type = <<>> :: binary(),
+                                end_time = <<>> :: binary(),
+                                room_id = <<>> :: binary(),
+                                group_id = <<>> :: binary(),
+                                profile_name = <<>> :: binary(),
+                                nick_name = <<>> :: binary(),
+                                result_type = <<>> :: binary(),
+                                sub_els = [] :: [xmpp_element() | fxml:xmlel()]}).
+-type media_call_activities() :: #media_call_activities{}.
+
+-record(user_activities, {remove_user = <<>> :: binary(),
+                          type = <<>> :: binary(),
+                          result_type = <<>> :: binary(),
+                          status = <<>> :: binary(),
+                          password = <<>> :: binary(),
+                          socket_id = <<>> :: binary(),
+                          message_from = <<>> :: binary(),
+                          message_to = <<>> :: binary(),
+                          to_user = <<>> :: binary(),
+                          mode = <<>> :: binary(),
+                          message_id = <<>> :: binary(),
+                          message_ids = <<>> :: binary(),
+                          chat_type = <<>> :: binary(),
+                          reply_id = <<>> :: binary(),
+                          delete_type = <<>> :: binary(),
+                          favourite = <<>> :: binary(),
+                          sub_els = [] :: [xmpp_element() | fxml:xmlel()],
+                          position = <<>> :: binary(),
+                          limit = <<>> :: binary(),
+                          page = <<>> :: binary(),
+                          timestamp = <<>> :: binary(),
+                          prefetch = <<>> :: binary(),
+                          call_status = <<>> :: binary(),
+                          call_type = <<>> :: binary(),
+                          caller_device = <<>> :: binary(),
+                          call_id = <<>> :: binary(),
+                          call_attend_status = <<>> :: binary(),
+                          has_more_message = <<>> :: binary()}).
+-type user_activities() :: #user_activities{}.
+
 -record(adhoc_note, {type = info :: 'error' | 'info' | 'warn',
                      data = <<>> :: binary()}).
 -type adhoc_note() :: #adhoc_note{}.
@@ -139,13 +191,16 @@
                     data = <<>> :: binary()}).
 -type rsm_first() :: #rsm_first{}.
 
--record(mark_received, {id = <<>> :: binary()}).
--type mark_received() :: #mark_received{}.
-
 -record(streamhost, {jid :: jid:jid(),
                      host = <<>> :: binary(),
                      port = 1080 :: non_neg_integer()}).
 -type streamhost() :: #streamhost{}.
+
+-record(logout, {type = <<>> :: binary()}).
+-type logout() :: #logout{}.
+
+-record(participant, {result_type = <<>> :: binary()}).
+-type participant() :: #participant{}.
 
 -record(x509_challenge_failed, {}).
 -type x509_challenge_failed() :: #x509_challenge_failed{}.
@@ -156,15 +211,15 @@
 -record(mark_acknowledged, {id = <<>> :: binary()}).
 -type mark_acknowledged() :: #mark_acknowledged{}.
 
+-record(mark_received, {id = <<>> :: binary()}).
+-type mark_received() :: #mark_received{}.
+
 -record(carbons_enable, {}).
 -type carbons_enable() :: #carbons_enable{}.
 
 -record(mix_create, {channel = <<>> :: binary(),
                      xmlns = <<>> :: binary()}).
 -type mix_create() :: #mix_create{}.
-
--record(carbons_private, {}).
--type carbons_private() :: #carbons_private{}.
 
 -record(receipt_response, {id = <<>> :: binary()}).
 -type receipt_response() :: #receipt_response{}.
@@ -173,8 +228,17 @@
                  stored :: 'undefined' | non_neg_integer()}).
 -type expire() :: #expire{}.
 
+-record(acknowledge, {broadcast_msgid = <<>> :: binary(),
+                      type = <<>> :: binary(),
+                      id = <<>> :: binary(),
+                      sent_to = <<>> :: binary()}).
+-type acknowledge() :: #acknowledge{}.
+
 -record(mix_leave, {xmlns = <<>> :: binary()}).
 -type mix_leave() :: #mix_leave{}.
+
+-record(profile_update, {vcard = <<>> :: binary()}).
+-type profile_update() :: #profile_update{}.
 
 -record(muc_unsubscribe, {nick = <<>> :: binary(),
                           jid :: undefined | jid:jid()}).
@@ -189,6 +253,18 @@
                     previd = <<>> :: binary(),
                     xmlns = <<>> :: binary()}).
 -type sm_resume() :: #sm_resume{}.
+
+-record(carbons_private, {}).
+-type carbons_private() :: #carbons_private{}.
+
+-record(user_fav, {to_user = <<>> :: binary(),
+                   message_id = <<>> :: binary(),
+                   chat_type = <<>> :: binary(),
+                   status = <<>> :: binary(),
+                   result_type = <<>> :: binary(),
+                   type = <<>> :: binary(),
+                   sub_els = [] :: [xmpp_element() | fxml:xmlel()]}).
+-type user_fav() :: #user_fav{}.
 
 -record(ping, {}).
 -type ping() :: #ping{}.
@@ -219,6 +295,9 @@
                    stanza = iq :: 'iq' | 'message'}).
 -type ibb_open() :: #ibb_open{}.
 
+-record(roster_notification, {roster_notification = <<>> :: binary()}).
+-type roster_notification() :: #roster_notification{}.
+
 -record(muc_decline, {reason = <<>> :: binary(),
                       from :: undefined | jid:jid(),
                       to :: undefined | jid:jid()}).
@@ -235,18 +314,27 @@
                            xmlns = <<>> :: binary()}).
 -type upload_request_0() :: #upload_request_0{}.
 
+-record(sm_a, {h :: non_neg_integer(),
+               xmlns = <<>> :: binary()}).
+-type sm_a() :: #sm_a{}.
+
 -record(ibb_data, {sid = <<>> :: binary(),
                    seq :: non_neg_integer(),
                    data = <<>> :: binary()}).
 -type ibb_data() :: #ibb_data{}.
 
--record(sm_a, {h :: non_neg_integer(),
-               xmlns = <<>> :: binary()}).
--type sm_a() :: #sm_a{}.
+-record(buser, {result_type = <<>> :: binary()}).
+-type buser() :: #buser{}.
 
 -record(x509_csr, {name = <<>> :: binary(),
                    der = <<>> :: binary()}).
 -type x509_csr() :: #x509_csr{}.
+
+-record(participants, {participant = [] :: [#participant{}]}).
+-type participants() :: #participants{}.
+
+-record(roster_status, {roster_status = <<>> :: binary()}).
+-type roster_status() :: #roster_status{}.
 
 -record(jingle_ft_received, {creator :: 'initiator' | 'responder' | 'undefined',
                              name = <<>> :: binary()}).
@@ -259,6 +347,9 @@
                      previd = <<>> :: binary(),
                      xmlns = <<>> :: binary()}).
 -type sm_resumed() :: #sm_resumed{}.
+
+-record(vcard_emailid, {vcard_email = <<>> :: binary()}).
+-type vcard_emailid() :: #vcard_emailid{}.
 
 -record(x509_request, {transaction = <<>> :: binary(),
                        csr :: #x509_csr{},
@@ -310,11 +401,17 @@
                          sub_els = [] :: [xmpp_element() | fxml:xmlel()]}).
 -type jingle_content() :: #jingle_content{}.
 
--record(sasl_challenge, {text = <<>> :: binary()}).
--type sasl_challenge() :: #sasl_challenge{}.
+-record(group_participant, {result_type = <<>> :: binary()}).
+-type group_participant() :: #group_participant{}.
+
+-record(broadcastid, {result_type = <<>> :: binary()}).
+-type broadcastid() :: #broadcastid{}.
 
 -record(handshake, {data = <<>> :: binary()}).
 -type handshake() :: #handshake{}.
+
+-record(roster_name, {roster_name = <<>> :: binary()}).
+-type roster_name() :: #roster_name{}.
 
 -record(db_feature, {errors = false :: boolean()}).
 -type db_feature() :: #db_feature{}.
@@ -337,11 +434,26 @@
                     xmlns = <<>> :: binary()}).
 -type sm_enable() :: #sm_enable{}.
 
+-record(roster_image, {roster_image = <<>> :: binary()}).
+-type roster_image() :: #roster_image{}.
+
+-record(roster_nickname, {roster_nickname = <<>> :: binary()}).
+-type roster_nickname() :: #roster_nickname{}.
+
+-record(vcard_image, {vcard_image = <<>> :: binary()}).
+-type vcard_image() :: #vcard_image{}.
+
 -record(starttls_failure, {}).
 -type starttls_failure() :: #starttls_failure{}.
 
 -record(gone, {uri = <<>> :: binary()}).
 -type gone() :: #gone{}.
+
+-record(sasl_challenge, {text = <<>> :: binary()}).
+-type sasl_challenge() :: #sasl_challenge{}.
+
+-record(vcard_coverimg, {vcard_coverimg = <<>> :: binary()}).
+-type vcard_coverimg() :: #vcard_coverimg{}.
 
 -record(hash, {algo = <<>> :: binary(),
                data = <<>> :: binary()}).
@@ -367,6 +479,14 @@
 -record(nick, {name = <<>> :: binary()}).
 -type nick() :: #nick{}.
 
+-record(mediacall, {call_mode = <<>> :: binary(),
+                    call_time = <<>> :: binary(),
+                    call_from = <<>> :: binary(),
+                    call_type = <<>> :: binary(),
+                    room_id = <<>> :: binary(),
+                    group_id = <<>> :: binary()}).
+-type mediacall() :: #mediacall{}.
+
 -record(feature_sm, {xmlns = <<>> :: binary()}).
 -type feature_sm() :: #feature_sm{}.
 
@@ -374,12 +494,31 @@
                   id = <<>> :: binary(),
                   sub_els = [] :: [xmpp_element() | fxml:xmlel()],
                   node = <<>> :: binary(),
-                  publisher = <<>> :: binary()}).
+                  publisher = <<>> :: binary(),
+                  usernick = <<>> :: binary(),
+                  sendernick = <<>> :: binary()}).
 -type ps_item() :: #ps_item{}.
 
 -record(ps_publish, {node = <<>> :: binary(),
                      items = [] :: [#ps_item{}]}).
 -type ps_publish() :: #ps_publish{}.
+
+-record(group_subscription, {result_type = <<>> :: binary(),
+                             node = <<>> :: binary()}).
+-type group_subscription() :: #group_subscription{}.
+
+-record(group_subscriptions, {subscription = [] :: [#group_subscription{}]}).
+-type group_subscriptions() :: #group_subscriptions{}.
+
+-record(reaction, {msgid = <<>> :: binary(),
+                   from_user = <<>> :: binary(),
+                   sender_name = <<>> :: binary(),
+                   message_type = <<>> :: binary(),
+                   chat_type = <<>> :: binary(),
+                   group_jid = <<>> :: binary(),
+                   timestamp = <<>> :: binary(),
+                   result_type = <<>> :: binary()}).
+-type reaction() :: #reaction{}.
 
 -record(avatar_pointer, {bytes :: 'undefined' | non_neg_integer(),
                          id = <<>> :: binary(),
@@ -408,6 +547,18 @@
 
 -record(addresses, {list = [] :: [#address{}]}).
 -type addresses() :: #addresses{}.
+
+-record(reactions, {msgid = <<>> :: binary()}).
+-type reactions() :: #reactions{}.
+
+-record(group_participants, {participant = [] :: [#group_participant{}]}).
+-type group_participants() :: #group_participants{}.
+
+-record(vcard_status, {vcard_status = <<>> :: binary()}).
+-type vcard_status() :: #vcard_status{}.
+
+-record(users, {user = [] :: [#buser{}]}).
+-type users() :: #users{}.
 
 -record(starttls, {required = false :: boolean()}).
 -type starttls() :: #starttls{}.
@@ -457,6 +608,28 @@
 -record(muc_unique, {name = <<>> :: binary()}).
 -type muc_unique() :: #muc_unique{}.
 
+-record(broadcastname, {result_type = <<>> :: binary()}).
+-type broadcastname() :: #broadcastname{}.
+
+-record(broadcast, {name = <<>> :: binary(),
+                    users = [] :: [#users{}],
+                    status = <<>> :: binary(),
+                    content = <<>> :: binary(),
+                    team_id = <<>> :: binary(),
+                    message_id = <<>> :: binary(),
+                    message_type = <<>> :: binary(),
+                    participants = [] :: [#participants{}],
+                    broadcastname = [] :: [#broadcastname{}],
+                    broadcastid = [] :: [#broadcastid{}]}).
+-type broadcast() :: #broadcast{}.
+
+-record(query, {type = <<>> :: binary(),
+                broadcast = [] :: [#broadcast{}],
+                result_type = <<>> :: binary(),
+                status = <<>> :: binary(),
+                sub_els = [] :: [xmpp_element() | fxml:xmlel()]}).
+-type query() :: #query{}.
+
 -record(markable, {}).
 -type markable() :: #markable{}.
 
@@ -476,6 +649,18 @@
 
 -record(feature_csi, {}).
 -type feature_csi() :: #feature_csi{}.
+
+-record(recall, {id = <<>> :: binary(),
+                 time = <<>> :: binary()}).
+-type recall() :: #recall{}.
+
+-record(call, {socket_id = <<>> :: binary(),
+               call_status = <<>> :: binary(),
+               call_type = <<>> :: binary(),
+               caller_device = <<>> :: binary(),
+               call_attend_status = <<>> :: binary(),
+               call_id = <<>> :: binary()}).
+-type call() :: #call{}.
 
 -record(report, {reason :: 'abuse' | 'spam' | 'undefined',
                  text = [] :: [#text{}]}).
@@ -519,6 +704,12 @@
                           expiry :: undefined | erlang:timestamp()}).
 -type ps_subscription() :: #ps_subscription{}.
 
+-record(vcard_designation, {vcard_designation = <<>> :: binary()}).
+-type vcard_designation() :: #vcard_designation{}.
+
+-record(roster_designation, {roster_designation = <<>> :: binary()}).
+-type roster_designation() :: #roster_designation{}.
+
 -record(avatar_info, {bytes :: non_neg_integer(),
                       id = <<>> :: binary(),
                       type = <<>> :: binary(),
@@ -543,6 +734,15 @@
 -record(x509_register, {}).
 -type x509_register() :: #x509_register{}.
 
+-record(vcard_mobile_number, {vcard_mobile_number = <<>> :: binary()}).
+-type vcard_mobile_number() :: #vcard_mobile_number{}.
+
+-record(shim, {headers = [] :: [{binary(),binary()}]}).
+-type shim() :: #shim{}.
+
+-record(roster_mobilenumber, {roster_mobilenumber = <<>> :: binary()}).
+-type roster_mobilenumber() :: #roster_mobilenumber{}.
+
 -record(muc_item, {actor :: 'undefined' | #muc_actor{},
                    continue :: 'undefined' | binary(),
                    reason = <<>> :: binary(),
@@ -554,9 +754,6 @@
 
 -record(muc_admin, {items = [] :: [#muc_item{}]}).
 -type muc_admin() :: #muc_admin{}.
-
--record(shim, {headers = [] :: [{binary(),binary()}]}).
--type shim() :: #shim{}.
 
 -record(caps, {node = <<>> :: binary(),
                version = <<>> :: binary(),
@@ -586,6 +783,19 @@
                     never :: undefined | [jid:jid()]}).
 -type mam_prefs() :: #mam_prefs{}.
 
+-record(delete_messages, {delete_message = [] :: [#user_activities{}]}).
+-type delete_messages() :: #delete_messages{}.
+
+-record(del_message_activities, {type = <<>> :: binary(),
+                                 status = <<>> :: binary(),
+                                 to_user = <<>> :: binary(),
+                                 file_tokens = <<>> :: binary(),
+                                 delete_type = <<>> :: binary(),
+                                 delete_messages = [] :: [#delete_messages{}],
+                                 result_type = <<>> :: binary(),
+                                 sub_els = [] :: [xmpp_element() | fxml:xmlel()]}).
+-type del_message_activities() :: #del_message_activities{}.
+
 -record(stream_features, {sub_els = [] :: [xmpp_element() | fxml:xmlel()]}).
 -type stream_features() :: #stream_features{}.
 
@@ -593,9 +803,6 @@
               port :: 'undefined' | non_neg_integer(),
               xmlns = <<>> :: binary()}).
 -type sic() :: #sic{}.
-
--record(sasl_abort, {}).
--type sasl_abort() :: #sasl_abort{}.
 
 -record(receipt_request, {}).
 -type receipt_request() :: #receipt_request{}.
@@ -607,6 +814,10 @@
                       x400 = false :: boolean(),
                       userid :: 'undefined' | binary()}).
 -type vcard_email() :: #vcard_email{}.
+
+-record(delivered, {id = <<>> :: binary(),
+                    time = <<>> :: binary()}).
+-type delivered() :: #delivered{}.
 
 -record(db_result, {from = <<>> :: binary(),
                     to = <<>> :: binary(),
@@ -630,11 +841,6 @@
 -record(muc_hats, {hats = [] :: [#muc_hat{}]}).
 -type muc_hats() :: #muc_hats{}.
 
--record(upload_slot, {get :: 'undefined' | binary(),
-                      put :: 'undefined' | binary(),
-                      xmlns = <<>> :: binary()}).
--type upload_slot() :: #upload_slot{}.
-
 -record(vcard_geo, {lat :: 'undefined' | binary(),
                     lon :: 'undefined' | binary()}).
 -type vcard_geo() :: #vcard_geo{}.
@@ -643,15 +849,14 @@
                        text = [] :: [#text{}]}).
 -type sasl_failure() :: #sasl_failure{}.
 
+-record(chatcontent, {block_user = <<48>> :: binary(),
+                      broadcast_id = <<>> :: binary(),
+                      broadcast_msgid = <<>> :: binary(),
+                      message_type = <<>> :: binary()}).
+-type chatcontent() :: #chatcontent{}.
+
 -record(hash_used, {algo = <<>> :: binary()}).
 -type hash_used() :: #hash_used{}.
-
--record(xevent, {offline = false :: boolean(),
-                 delivered = false :: boolean(),
-                 displayed = false :: boolean(),
-                 composing = false :: boolean(),
-                 id :: 'undefined' | binary()}).
--type xevent() :: #xevent{}.
 
 -record(mix, {submission_id = <<>> :: binary(),
               jid :: undefined | jid:jid(),
@@ -677,7 +882,10 @@
 
 -record(mix_participant, {jid :: jid:jid(),
                           nick = <<>> :: binary(),
-                          xmlns = <<>> :: binary()}).
+                          xmlns = <<>> :: binary(),
+                          usernick = <<>> :: binary(),
+                          sendernick = <<>> :: binary(),
+                          request_type = <<>> :: binary()}).
 -type mix_participant() :: #mix_participant{}.
 
 -record(compressed, {}).
@@ -686,10 +894,20 @@
 -record(block_list, {items = [] :: [#block_item{}]}).
 -type block_list() :: #block_list{}.
 
--record(version, {name :: 'undefined' | binary(),
-                  ver :: 'undefined' | binary(),
-                  os :: 'undefined' | binary()}).
--type version() :: #version{}.
+-record(upload_slot, {get :: 'undefined' | binary(),
+                      put :: 'undefined' | binary(),
+                      xmlns = <<>> :: binary()}).
+-type upload_slot() :: #upload_slot{}.
+
+-record(xevent, {offline = false :: boolean(),
+                 delivered = false :: boolean(),
+                 displayed = false :: boolean(),
+                 composing = false :: boolean(),
+                 id :: 'undefined' | binary()}).
+-type xevent() :: #xevent{}.
+
+-record(sasl_abort, {}).
+-type sasl_abort() :: #sasl_abort{}.
 
 -record(jingle_ft_file, {date :: undefined | erlang:timestamp(),
                          desc = [] :: [#text{}],
@@ -793,12 +1011,20 @@
                                error :: 'candidate-error' | 'proxy-error' | 'undefined'}).
 -type jingle_s5b_transport() :: #jingle_s5b_transport{}.
 
+-record(vcard_nickName, {vcard_nickName = <<>> :: binary()}).
+-type vcard_nickName() :: #vcard_nickName{}.
+
 -record(delegated, {ns = <<>> :: binary(),
                     attrs = [] :: [binary()]}).
 -type delegated() :: #delegated{}.
 
 -record(carbons_disable, {}).
 -type carbons_disable() :: #carbons_disable{}.
+
+-record(version, {name :: 'undefined' | binary(),
+                  ver :: 'undefined' | binary(),
+                  os :: 'undefined' | binary()}).
+-type version() :: #version{}.
 
 -record(adhoc_actions, {execute :: 'complete' | 'next' | 'prev' | 'undefined',
                         prev = false :: boolean(),
@@ -809,6 +1035,9 @@
 -record(vcard_org, {name :: 'undefined' | binary(),
                     units = [] :: [binary()]}).
 -type vcard_org() :: #vcard_org{}.
+
+-record(roster_coverimg, {roster_coverimg = <<>> :: binary()}).
+-type roster_coverimg() :: #roster_coverimg{}.
 
 -record(vcard_tel, {home = false :: boolean(),
                     work = false :: boolean(),
@@ -847,20 +1076,6 @@
                       rsm :: 'undefined' | #rsm_set{}}).
 -type disco_items() :: #disco_items{}.
 
--record(muc_destroy, {xmlns = <<>> :: binary(),
-                      jid :: undefined | jid:jid(),
-                      reason = <<>> :: binary(),
-                      password :: 'undefined' | binary()}).
--type muc_destroy() :: #muc_destroy{}.
-
--record(muc_user, {decline :: 'undefined' | #muc_decline{},
-                   destroy :: 'undefined' | #muc_destroy{},
-                   invites = [] :: [#muc_invite{}],
-                   items = [] :: [#muc_item{}],
-                   status_codes = [] :: [pos_integer()],
-                   password :: 'undefined' | binary()}).
--type muc_user() :: #muc_user{}.
-
 -record(vcard_name, {family :: 'undefined' | binary(),
                      given :: 'undefined' | binary(),
                      middle :: 'undefined' | binary(),
@@ -890,6 +1105,19 @@
                     cred :: 'undefined' | binary()}).
 -type vcard_key() :: #vcard_key{}.
 
+-record(group_query, {status = <<>> :: binary(),
+                      type = <<>> :: binary(),
+                      chat_type = <<>> :: binary(),
+                      msgid = <<>> :: binary(),
+                      group_id = <<>> :: binary(),
+                      pin_status = <<>> :: binary(),
+                      ptt_status = <<>> :: binary(),
+                      subscriptions = [] :: [#group_subscriptions{}],
+                      participants = [] :: [#group_participants{}],
+                      result_type = <<>> :: binary(),
+                      sub_els = [] :: [xmpp_element() | fxml:xmlel()]}).
+-type group_query() :: #group_query{}.
+
 -record(inbox_query, {rsm :: 'undefined' | #rsm_set{}}).
 -type inbox_query() :: #inbox_query{}.
 
@@ -898,6 +1126,20 @@
                    lang = <<>> :: binary(),
                    name = <<>> :: binary()}).
 -type identity() :: #identity{}.
+
+-record(muc_destroy, {xmlns = <<>> :: binary(),
+                      jid :: undefined | jid:jid(),
+                      reason = <<>> :: binary(),
+                      password :: 'undefined' | binary()}).
+-type muc_destroy() :: #muc_destroy{}.
+
+-record(muc_user, {decline :: 'undefined' | #muc_decline{},
+                   destroy :: 'undefined' | #muc_destroy{},
+                   invites = [] :: [#muc_invite{}],
+                   items = [] :: [#muc_item{}],
+                   status_codes = [] :: [pos_integer()],
+                   password :: 'undefined' | binary()}).
+-type muc_user() :: #muc_user{}.
 
 -record(bookmark_conference, {name = <<>> :: binary(),
                               jid :: jid:jid(),
@@ -912,19 +1154,6 @@
 
 -record(mix_roster_channel, {participant_id = <<>> :: binary()}).
 -type mix_roster_channel() :: #mix_roster_channel{}.
-
--record(roster_item, {jid :: jid:jid(),
-                      name = <<>> :: binary(),
-                      groups = [] :: [binary()],
-                      subscription = none :: 'both' | 'from' | 'none' | 'remove' | 'to',
-                      ask :: 'subscribe' | 'undefined',
-                      mix_channel :: 'undefined' | #mix_roster_channel{}}).
--type roster_item() :: #roster_item{}.
-
--record(roster_query, {items = [] :: [#roster_item{}],
-                       ver :: 'undefined' | binary(),
-                       mix_annotate = false :: boolean()}).
--type roster_query() :: #roster_query{}.
 
 -record(xmpp_session, {optional = false :: boolean()}).
 -type xmpp_session() :: #xmpp_session{}.
@@ -978,12 +1207,37 @@
                     ctry :: 'undefined' | binary()}).
 -type vcard_adr() :: #vcard_adr{}.
 
--record(search_item, {jid :: jid:jid(),
-                      first :: 'undefined' | binary(),
-                      last :: 'undefined' | binary(),
-                      nick :: 'undefined' | binary(),
-                      email :: 'undefined' | binary()}).
--type search_item() :: #search_item{}.
+-record(roster_email, {roster_email = <<>> :: binary()}).
+-type roster_email() :: #roster_email{}.
+
+-record(roster_vcard, {roster_vcard = <<>> :: binary(),
+                       roster_nickname = [] :: [#roster_nickname{}],
+                       roster_status = [] :: [#roster_status{}],
+                       roster_mobilenumber = [] :: [#roster_mobilenumber{}],
+                       roster_coverimg = [] :: [#roster_coverimg{}],
+                       roster_designation = [] :: [#roster_designation{}],
+                       roster_name = [] :: [#roster_name{}],
+                       roster_image = [] :: [#roster_image{}],
+                       roster_email = [] :: [#roster_email{}],
+                       roster_notification = [] :: [#roster_notification{}]}).
+-type roster_vcard() :: #roster_vcard{}.
+
+-record(roster_profile, {vCard = [] :: [#roster_vcard{}]}).
+-type roster_profile() :: #roster_profile{}.
+
+-record(roster_item, {jid :: jid:jid(),
+                      name = <<>> :: binary(),
+                      groups = [] :: [binary()],
+                      subscription = none :: 'both' | 'from' | 'none' | 'remove' | 'to',
+                      ask :: 'subscribe' | 'undefined',
+                      profiles = [] :: [#roster_profile{}],
+                      mix_channel :: 'undefined' | #mix_roster_channel{}}).
+-type roster_item() :: #roster_item{}.
+
+-record(roster_query, {items = [] :: [#roster_item{}],
+                       ver :: 'undefined' | binary(),
+                       mix_annotate = false :: boolean()}).
+-type roster_query() :: #roster_query{}.
 
 -record(xdata, {type :: 'cancel' | 'form' | 'result' | 'submit',
                 instructions = [] :: [binary()],
@@ -1030,15 +1284,6 @@
                         notes = [] :: [#adhoc_note{}],
                         xdata :: 'undefined' | #xdata{}}).
 -type adhoc_command() :: #adhoc_command{}.
-
--record(search, {instructions :: 'undefined' | binary(),
-                 first :: 'undefined' | binary(),
-                 last :: 'undefined' | binary(),
-                 nick :: 'undefined' | binary(),
-                 email :: 'undefined' | binary(),
-                 items = [] :: [#search_item{}],
-                 xdata :: 'undefined' | #xdata{}}).
--type search() :: #search{}.
 
 -record(mam_query, {xmlns = <<>> :: binary(),
                     id = <<>> :: binary(),
@@ -1138,6 +1383,22 @@
                     items = [] :: [#muc_item{}]}).
 -type muc_owner() :: #muc_owner{}.
 
+-record(search_item, {jid :: jid:jid(),
+                      first :: 'undefined' | binary(),
+                      last :: 'undefined' | binary(),
+                      nick :: 'undefined' | binary(),
+                      email :: 'undefined' | binary()}).
+-type search_item() :: #search_item{}.
+
+-record(search, {instructions :: 'undefined' | binary(),
+                 first :: 'undefined' | binary(),
+                 last :: 'undefined' | binary(),
+                 nick :: 'undefined' | binary(),
+                 email :: 'undefined' | binary(),
+                 items = [] :: [#search_item{}],
+                 xdata :: 'undefined' | #xdata{}}).
+-type search() :: #search{}.
+
 -record(delegation, {delegated = [] :: [#delegated{}],
                      forwarded :: 'undefined' | #forwarded{}}).
 -type delegation() :: #delegation{}.
@@ -1163,13 +1424,12 @@
                    jid :: undefined | jid:jid(),
                    nick = <<>> :: binary(),
                    subscribe = [] :: [binary()],
-                   xmlns = <<>> :: binary()}).
+                   xmlns = <<117,114,110,58,120,109,112,112,58,109,105,120,58,99,111,114,101,58,48>> :: binary(),
+                   owner = <<>> :: binary(),
+                   usernick = <<>> :: binary(),
+                   sendernick = <<>> :: binary(),
+                   request_type = <<>> :: binary()}).
 -type mix_join() :: #mix_join{}.
-
--record(mix_client_join, {channel :: undefined | jid:jid(),
-                          join :: #mix_join{},
-                          xmlns = <<>> :: binary()}).
--type mix_client_join() :: #mix_client_join{}.
 
 -record(inbox_fin, {total :: 'undefined' | non_neg_integer(),
                     unread :: 'undefined' | non_neg_integer(),
@@ -1203,15 +1463,30 @@
 -type sm_failed() :: #sm_failed{}.
 
 -record(stanza_error, {type :: 'auth' | 'cancel' | 'continue' | 'modify' | 'wait',
+                       code :: 'undefined' | non_neg_integer(),
                        by :: undefined | jid:jid(),
                        reason :: atom() | #gone{} | #redirect{},
                        text = [] :: [#text{}],
                        sub_els = [] :: [xmpp_element() | fxml:xmlel()]}).
 -type stanza_error() :: #stanza_error{}.
 
+-record(seen, {id = <<>> :: binary(),
+               time = <<>> :: binary()}).
+-type seen() :: #seen{}.
+
 -record(stream_error, {reason :: atom() | #'see-other-host'{},
                        text = [] :: [#text{}]}).
 -type stream_error() :: #stream_error{}.
+
+-record(mix_client_join, {channel :: undefined | jid:jid(),
+                          join :: #mix_join{},
+                          xmlns = <<>> :: binary(),
+                          affiliation = <<>> :: binary()}).
+-type mix_client_join() :: #mix_client_join{}.
+
+-record(time, {tzo :: 'undefined' | {integer(),integer()},
+               utc :: undefined | erlang:timestamp()}).
+-type time() :: #time{}.
 
 -record(vcard_logo, {type :: 'undefined' | binary(),
                      binval :: 'undefined' | binary(),
@@ -1236,6 +1511,13 @@
                      role :: 'undefined' | binary(),
                      logo :: 'undefined' | #vcard_logo{},
                      org :: 'undefined' | #vcard_org{},
+                     vcard_status :: 'undefined' | #vcard_status{},
+                     vcard_mobile_number :: 'undefined' | #vcard_mobile_number{},
+                     vcard_designation :: 'undefined' | #vcard_designation{},
+                     vcard_coverimg :: 'undefined' | #vcard_coverimg{},
+                     vcard_image :: 'undefined' | #vcard_image{},
+                     vcard_emailid :: 'undefined' | #vcard_emailid{},
+                     vcard_nickName :: 'undefined' | #vcard_nickName{},
                      categories = [] :: [binary()],
                      note :: 'undefined' | binary(),
                      prodid :: 'undefined' | binary(),
@@ -1250,11 +1532,8 @@
                      sub_els = [] :: [xmpp_element() | fxml:xmlel()]}).
 -type vcard_temp() :: #vcard_temp{}.
 
--record(time, {tzo :: 'undefined' | {integer(),integer()},
-               utc :: undefined | erlang:timestamp()}).
--type time() :: #time{}.
-
--type xmpp_element() :: address() |
+-type xmpp_element() :: acknowledge() |
+                        address() |
                         addresses() |
                         adhoc_actions() |
                         adhoc_command() |
@@ -1271,13 +1550,19 @@
                         bookmark_conference() |
                         bookmark_storage() |
                         bookmark_url() |
+                        broadcast() |
+                        broadcastid() |
+                        broadcastname() |
+                        buser() |
                         bytestreams() |
+                        call() |
                         caps() |
                         carbons_disable() |
                         carbons_enable() |
                         carbons_private() |
                         carbons_received() |
                         carbons_sent() |
+                        chatcontent() |
                         chatstate() |
                         compress() |
                         compress_failure() |
@@ -1288,10 +1573,13 @@
                         db_feature() |
                         db_result() |
                         db_verify() |
+                        del_message_activities() |
                         delay() |
                         delegated() |
                         delegation() |
                         delegation_query() |
+                        delete_messages() |
+                        delivered() |
                         disco_info() |
                         disco_item() |
                         disco_items() |
@@ -1301,6 +1589,11 @@
                         feature_sm() |
                         forwarded() |
                         gone() |
+                        group_participant() |
+                        group_participants() |
+                        group_query() |
+                        group_subscription() |
+                        group_subscriptions() |
                         handshake() |
                         hash() |
                         hash_used() |
@@ -1331,6 +1624,7 @@
                         last() |
                         legacy_auth() |
                         legacy_auth_feature() |
+                        logout() |
                         mam_archived() |
                         mam_fin() |
                         mam_prefs() |
@@ -1341,7 +1635,9 @@
                         mark_received() |
                         markable() |
                         media() |
+                        media_call_activities() |
                         media_uri() |
+                        mediacall() |
                         message() |
                         message_thread() |
                         mix() |
@@ -1378,6 +1674,8 @@
                         offline_item() |
                         oob_x() |
                         origin_id() |
+                        participant() |
+                        participants() |
                         ping() |
                         presence() |
                         privacy_item() |
@@ -1386,6 +1684,7 @@
                         private() |
                         privilege() |
                         privilege_perm() |
+                        profile_update() |
                         ps_affiliation() |
                         ps_error() |
                         ps_event() |
@@ -1402,13 +1701,28 @@
                         push_disable() |
                         push_enable() |
                         push_notification() |
+                        query() |
+                        reaction() |
+                        reactions() |
+                        recall() |
                         receipt_request() |
                         receipt_response() |
                         redirect() |
                         register() |
                         report() |
+                        roster_coverimg() |
+                        roster_designation() |
+                        roster_email() |
+                        roster_image() |
                         roster_item() |
+                        roster_mobilenumber() |
+                        roster_name() |
+                        roster_nickname() |
+                        roster_notification() |
+                        roster_profile() |
                         roster_query() |
+                        roster_status() |
+                        roster_vcard() |
                         rosterver_feature() |
                         rsm_first() |
                         rsm_set() |
@@ -1422,6 +1736,7 @@
                         search() |
                         search_item() |
                         'see-other-host'() |
+                        seen() |
                         service() |
                         services() |
                         shim() |
@@ -1448,6 +1763,7 @@
                         text() |
                         thumbnail() |
                         time() |
+                        timestampmsg() |
                         unblock() |
                         upload_file_too_large() |
                         upload_request() |
@@ -1455,16 +1771,26 @@
                         upload_retry() |
                         upload_slot() |
                         upload_slot_0() |
+                        user_activities() |
+                        user_fav() |
+                        users() |
                         vcard_adr() |
+                        vcard_coverimg() |
+                        vcard_designation() |
                         vcard_email() |
+                        vcard_emailid() |
                         vcard_geo() |
+                        vcard_image() |
                         vcard_key() |
                         vcard_label() |
                         vcard_logo() |
+                        vcard_mobile_number() |
                         vcard_name() |
+                        vcard_nickName() |
                         vcard_org() |
                         vcard_photo() |
                         vcard_sound() |
+                        vcard_status() |
                         vcard_tel() |
                         vcard_temp() |
                         vcard_xupdate() |
