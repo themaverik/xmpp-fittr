@@ -13,6 +13,374 @@
 			  dec = {jid, decode, []},
 			  enc = {jid, encode, []}}}).
 
+-xml(user_fav,
+     #elem{name = <<"query">>,
+           xmlns = <<"jabber:iq:user_fav">>,
+	   module = 'user_fav',
+           result = {user_fav, '$to_user','$message_id','$chat_type','$status','$result_type','$type','$_els'},
+                     attrs = [#attr{name = <<"chat_type">>,default = <<"">>},
+                              #attr{name = <<"message_id">>,default = <<"">>},
+                              #attr{name = <<"to_user">>,default = <<"">>},
+                              #attr{name = <<"type">>,default = <<"">>},
+                              #attr{name = <<"status">>,default = <<"">>}],
+                       cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+-xml(query_broadcast,
+     #elem{name = <<"query">>,
+           xmlns = <<"jabber:iq:mod_broadcast">>,
+	   module = 'broadcast',
+           result = {query,'$type','$broadcast', '$result_type','$status','$_els'},
+                     attrs = [#attr{name = <<"type">>,default = <<"">>},#attr{name = <<"status">>,default = <<"">>}],
+                               cdata = #cdata{default = <<"">>, label = '$result_type'},
+                        refs = [#ref{name = broadcast_tag,
+                                               label = '$broadcast'}]}).
+
+-xml(group_chat_query,
+     #elem{name = <<"query">>,
+           xmlns = <<"jabber:iq:mixgroupchat">>,
+	   module = 'mix_group_chat',
+           result = {group_query,'$status','$type','$chat_type','$msgid','$group_id','$pin_status','$ptt_status', '$subscriptions','$participants','$result_type','$_els'},
+                     attrs = [#attr{name = <<"status">>,default = <<"">>},
+                              #attr{name = <<"type">>,default = <<"">>},
+                              #attr{name = <<"group_id">>,default = <<"">>},
+                              #attr{name = <<"chat_type">>,default = <<"">>},
+                              #attr{name = <<"pin_status">>,default = <<"">>},
+                              #attr{name = <<"ptt_status">>,default = <<"">>},
+                              #attr{name = <<"msgid">>,default = <<"">>}],
+                               cdata = #cdata{default = <<"">>, label = '$result_type'},
+                        refs = [#ref{name = group_chat_subscriptions,
+                                               label = '$subscriptions'},
+                                #ref{name = group_chat_participants,
+                                               label = '$participants'}
+                                               ]}).
+record(group_query, {status = <<>> :: binary(),
+                      type = <<>> :: binary(),
+                      msgid = <<>> :: binary(),
+                      group_id = <<>> :: binary(),
+                      pin_status = <<>> :: binary(),
+                      ptt_status = <<>> :: binary(),
+                      message_id = <<>> :: binary(),
+                      subscriptions = [] :: [#group_subscriptions{}],
+                      participants = [] :: [#group_participants{}],
+                      result_type = <<>> :: binary(),
+                      sub_els = [] :: [xmpp_element() | fxml:xmlel()]}).
+
+-xml(group_chat_subscriptions,
+        #elem{name = <<"subscriptions">>,
+              xmlns = <<"jabber:iq:mixgroupchat">>,
+   	   module = 'mix_group_chat',
+              result = {group_subscriptions, '$subscription'},
+              refs = [#ref{name = group_chat_subscription,
+                           label = '$subscription'}]}).
+
+-xml(group_chat_subscription,
+       #elem{name = <<"subscribe">>,
+             xmlns = <<"jabber:iq:mixgroupchat">>,
+  	   module = 'mix_group_chat',
+             result = {group_subscription, '$result_type','$node'},
+              attrs = [#attr{name = <<"node">>, default = <<"">>}],
+             cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+-xml(group_chat_participants,
+        #elem{name = <<"participants">>,
+              xmlns = <<"jabber:iq:mixgroupchat">>,
+   	   module = 'mix_group_chat',
+              result = {group_participants, '$participant'},
+              refs = [#ref{name = group_chat_participant,
+                           label = '$participant'}]}).
+
+-xml(group_chat_participant,
+       #elem{name = <<"participant">>,
+             xmlns = <<"jabber:iq:mixgroupchat">>,
+  	   module = 'mix_group_chat',
+             result = {group_participant, '$result_type'},
+             cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+-xml(broadcast_tag,
+     #elem{name = <<"broadcast">>,
+           xmlns = <<"jabber:iq:mod_broadcast">>,
+	   module = 'broadcast',
+           result = {broadcast, '$name', '$users','$status','$content','$team_id','$message_id','$message_type','$participants','$broadcastname','$broadcastid'},
+           attrs = [#attr{name = <<"name">>, default = <<"">>},
+            #attr{name = <<"content">>, default = <<"">>},
+             #attr{name = <<"team_id">>,
+                         default = <<"">>},
+          #attr{name = <<"message_id">>,
+                          default = <<"">>},
+          #attr{name = <<"message_type">>,
+                          default = <<"">>},
+                    #attr{name = <<"status">>,
+                          required = true}],
+           refs = [#ref{name = broadcast_users,
+                        label = '$users'},
+                   #ref{name = broadcast_participants,
+                                           label = '$participants'},
+                    #ref{name = broadcast_name,
+                                            label = '$broadcastname'},
+                      #ref{name = broadcast_id,
+                                            label = '$broadcastid'}
+                        ]}).
+
+ -xml(broadcast_users,
+      #elem{name = <<"users">>,
+            xmlns = <<"jabber:iq:mod_broadcast">>,
+ 	   module = 'broadcast',
+            result = {users, '$user'},
+            refs = [#ref{name = broadcast_user, label = '$user'}]}).
+
+  -xml(broadcast_user,
+       #elem{name = <<"broadcast_user">>,
+             xmlns = <<"jabber:iq:mod_broadcast">>,
+  	   module = 'broadcast',
+             result = {buser, '$result_type'},
+             cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+  -xml(broadcast_name,
+       #elem{name = <<"broadcastname">>,
+             xmlns = <<"jabber:iq:mod_broadcast">>,
+  	   module = 'broadcast',
+             result = {broadcastname, '$result_type'},
+             cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+  -xml(broadcast_id,
+         #elem{name = <<"broadcastid">>,
+               xmlns = <<"jabber:iq:mod_broadcast">>,
+    	   module = 'broadcast',
+               result = {broadcastid, '$result_type'},
+               cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+ -xml(broadcast_participants,
+      #elem{name = <<"participants">>,
+            xmlns = <<"jabber:iq:mod_broadcast">>,
+ 	   module = 'broadcast',
+            result = {participants, '$participant'},
+            refs = [#ref{name = broadcast_participant,
+                         label = '$participant'}]}).
+
+  -xml(broadcast_participant,
+           #elem{name = <<"participant">>,
+                 xmlns = <<"jabber:iq:mod_broadcast">>,
+      	   module = 'broadcast',
+                 result = {participant, '$result_type'},
+                 cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+
+-xml(media_call_activities,
+     #elem{name = <<"query">>,
+           xmlns = <<"jabber:iq:media_call_activities">>,
+	   module = 'media_call_activities',
+           result = {media_call_activities,  '$type', '$status','$call_status','$start_time','$call_mode',
+           '$call_from','$call_time','$call_type','$end_time','$room_id','$group_id','$profile_name','$nick_name','$result_type'
+           ,'$_els'},
+                     attrs = [#attr{name = <<"type">>,default = <<"">>},
+                              #attr{name = <<"room_id">>,default = <<"">>},
+                              #attr{name = <<"group_id">>,default = <<"">>},
+                              #attr{name = <<"call_status">>,default = <<"">>},
+                              #attr{name = <<"call_type">>,default = <<"">>},
+                              #attr{name = <<"call_time">>,default = <<"">>},
+                              #attr{name = <<"call_mode">>,default = <<"">>},
+                              #attr{name = <<"profile_name">>,default = <<"">>},
+                              #attr{name = <<"nick_name">>,default = <<"">>},
+                              #attr{name = <<"call_from">>,default = <<"">>},
+                              #attr{name = <<"start_time">>,default = <<"">>},
+                              #attr{name = <<"end_time">>,default = <<"">>},
+                              #attr{name = <<"status">>,default = <<"">>}],
+                       cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+-xml(user_activities,
+     #elem{name = <<"query">>,
+           xmlns = <<"jabber:iq:user_activities">>,
+	   module = 'user_activities',
+           result = {user_activities, '$remove_user', '$type', '$result_type','$status','$password',
+           '$socket_id','$message_from','$message_to','$to_user','$mode','$message_id','$message_ids',
+           '$chat_type','$reply_id','$delete_type','$favourite','$_els','$position','$limit','$page',
+           '$timestamp', '$prefetch', '$call_status','$call_type','$caller_device','$call_id',
+           '$call_attend_status', '$has_more_message'},
+                     attrs = [#attr{name = <<"remove_user">>,default = <<"">>},
+                              #attr{name = <<"type">>,default = <<"">>},
+                              #attr{name = <<"message_from">>,default = <<"">>},
+                              #attr{name = <<"message_to">>,default = <<"">>},
+                              #attr{name = <<"message_id">>,default = <<"">>},
+                              #attr{name = <<"position">>,default = <<"">>},
+                              #attr{name = <<"prefetch">>,default = <<"">>},
+                              #attr{name = <<"limit">>,default = <<"">>},
+                              #attr{name = <<"page">>,default = <<"">>},
+                              #attr{name = <<"timestamp">>,default = <<"">>},
+                              #attr{name = <<"favourite">>,default = <<"">>},
+                              #attr{name = <<"delete_type">>,default = <<"">>},
+                              #attr{name = <<"to_user">>,default = <<"">>},
+                              #attr{name = <<"mode">>,default = <<"">>},
+                              #attr{name = <<"chat_type">>,default = <<"">>},
+                              #attr{name = <<"reply_id">>,default = <<"">>},
+                              #attr{name = <<"call_status">>,default = <<"">>},
+                              #attr{name = <<"call_type">>,default = <<"">>},
+                              #attr{name = <<"caller_device">>,default = <<"">>},
+                              #attr{name = <<"call_id">>,default = <<"">>},
+                              #attr{name = <<"call_attend_status">>,default = <<"">>},
+                              #attr{name = <<"message_ids">>,default = <<"">>},
+                              #attr{name = <<"socket_id">>,default = <<"">>},
+                              #attr{name = <<"password">>,default = <<"">>},
+                              #attr{name = <<"status">>,default = <<"">>},
+                              #attr{name = <<"has_more_message">>,default = <<"">>}],
+                       cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+
+-xml(del_message_activities,
+     #elem{name = <<"query">>,
+           xmlns = <<"jabber:iq:del_message_activities">>,
+	   module = 'del_message_activities',
+           result = {del_message_activities,  '$type', '$status','$to_user','$file_tokens', '$delete_type','$delete_messages','$result_type'
+           ,'$_els'},
+                     attrs = [#attr{name = <<"type">>,default = <<"">>},
+                              #attr{name = <<"delete_type">>,default = <<"">>},
+                              #attr{name = <<"to_user">>,default = <<"">>},
+                              #attr{name = <<"file_tokens">>,default = <<"">>},
+                              #attr{name = <<"status">>,default = <<"">>}],
+                       refs = [#ref{name = delete_messages, label = '$delete_messages'}],
+                       cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+-xml(delete_messages,
+     #elem{name = <<"delete_messages">>,
+      xmlns = <<"jabber:iq:del_message_activities">>,
+	   module = 'del_message_activities',
+          result = {delete_messages, '$delete_message'},
+                      refs = [#ref{name = delete_message, label = '$delete_message'}]}).
+
+
+-xml(delete_message,
+     #elem{name = <<"delete_message">>,
+      xmlns = <<"jabber:iq:del_message_activities">>,
+	   module = 'del_message_activities',
+           result = {user_activities, '$id', '$to_user', '$type', '$file_token','$result_type'},
+           attrs = [
+           #attr{name = <<"id">>,default = <<"">>},
+           #attr{name = <<"to_user">>,default = <<"">>},
+           #attr{name = <<"type">>,default = <<"">>},
+                    #attr{name = <<"file_token">>,default = <<"">>}],
+            cdata = #cdata{default = <<"">>, label = '$result_type'}}).
+
+-xml(reactions,
+    #elem{name = <<"reactions">>,
+    xmlns = <<"urn:xmpp:reactions:0">>,
+    module = 'message_reactions',
+        result = {reactions, '$msgid'},
+        attrs = [
+           #attr{name = <<"msgid">>, default = <<"">>}
+        ]}).
+
+-xml(reaction,
+    #elem{name = <<"reaction">>,
+    xmlns = <<"urn:xmpp:reaction:0">>,
+    module = 'message_reaction',
+        result = {reaction, '$msgid', '$from_user', '$sender_name', '$message_type', '$chat_type', '$group_jid', '$timestamp', '$result_type'},
+        attrs = [
+           #attr{name = <<"msgid">>, default = <<"">>},
+           #attr{name = <<"from_user">>, default = <<"">>},
+           #attr{name = <<"sender_name">>, default = <<"">>},
+           #attr{name = <<"message_type">>, default = <<"">>},
+           #attr{name = <<"chat_type">>, default = <<"">>},
+           #attr{name = <<"group_jid">>, default = <<"">>},
+           #attr{name = <<"timestamp">>, default = <<"">>}
+        ],
+        cdata = #cdata{default = <<"">>, label = '$result_type'}
+    }).
+
+-xml(mediacall,
+     #elem{name = <<"mediacall">>,
+           xmlns = <<"urn:xmpp:call">>,
+	   module = 'call',
+           result = {mediacall, '$call_mode', '$call_time','$call_from','$call_type', '$room_id','$group_id'},
+           attrs = [#attr{name = <<"room_id">>,default = <<"">>},
+                    #attr{name = <<"call_type">>,default = <<"">>},
+                    #attr{name = <<"call_time">>,default = <<"">>},
+                    #attr{name = <<"group_id">>,default = <<"">>},
+                    #attr{name = <<"call_from">>,default = <<"">>},
+                    #attr{name = <<"call_mode">>,default = <<"">>}]}).
+
+-xml(call,
+     #elem{name = <<"call">>,
+           xmlns = <<"urn:xmpp:call">>,
+	   module = 'call',
+           result = {call, '$socket_id', '$call_status','$call_type', '$caller_device','$call_attend_status','$call_id'},
+           attrs = [#attr{name = <<"socket_id">>,default = <<"">>},
+                    #attr{name = <<"call_status">>,default = <<"">>},
+                    #attr{name = <<"call_attend_status">>,default = <<"">>},
+                    #attr{name = <<"call_id">>,default = <<"">>},
+                    #attr{name = <<"call_type">>,default = <<"">>},
+                    #attr{name = <<"caller_device">>,default = <<"">>}]}).
+
+
+-xml(chatcontent,
+     #elem{name = <<"chatcontent">>,
+           xmlns = <<"urn:xmpp:content">>,
+	   module = 'chatcontent',
+           result = {chatcontent, '$block_user', '$broadcast_id','$broadcast_msgid','$message_type'},
+           attrs = [#attr{name = <<"block_user">>,default = <<"0">>},
+                    #attr{name = <<"broadcast_id">>,default = <<"">>},
+                    #attr{name = <<"broadcast_msgid">>,default = <<"">>},
+                    #attr{name = <<"message_type">>,default = <<"">>}]}).
+
+
+-xml(delivered,
+     #elem{name = <<"delivered">>,
+           xmlns = <<"urn:xmpp:receipts">>,
+	   module = 'delivered',
+           result = {delivered, '$id', '$time'},
+           attrs = [#attr{name = <<"id">>,default = <<"">>},
+                    #attr{name = <<"time">>,default = <<"">>}]}).
+
+-xml(seen,
+     #elem{name = <<"seen">>,
+           xmlns = <<"urn:xmpp:receipts">>,
+	   module = 'seen',
+           result = {seen, '$id', '$time'},
+           attrs = [#attr{name = <<"id">>,default = <<"">>},
+                    #attr{name = <<"time">>,default = <<"">>}]}).
+
+
+-xml(logout,
+     #elem{name = <<"logout">>,
+           xmlns = <<"urn:xmpp:receipts">>,
+	   module = 'logout',
+           result = {logout, '$type'},
+           attrs = [#attr{name = <<"type">>,default = <<"">>}]}).
+
+-xml(recall,
+     #elem{name = <<"recall">>,
+           xmlns = <<"urn:xmpp:receipts">>,
+	   module = 'recall',
+           result = {recall, '$id', '$time'},
+           attrs = [#attr{name = <<"id">>,default = <<"">>},
+                    #attr{name = <<"time">>,default = <<"">>}]}).
+
+-xml(timestamp,
+     #elem{name = <<"timestamp">>,
+           xmlns = <<"urn:xmpp:messagetime">>,
+	   module = 'timestamp',
+           result = {timestampmsg, '$id', '$time'},
+           attrs = [#attr{name = <<"id">>,default = <<"">>},
+                    #attr{name = <<"time">>,default = <<"">>}]}).
+
+
+-xml(acknowledge,
+     #elem{name = <<"acknowledge">>,
+           xmlns = <<"urn:xmpp:receipts">>,
+	   module = 'acknowledge',
+           result = {acknowledge, '$broadcast_msgid', '$type','$id','$sent_to'},
+           attrs = [#attr{name = <<"id">>,default = <<"">>},
+                    #attr{name = <<"broadcast_msgid">>,default = <<"">>},
+                    #attr{name = <<"sent_to">>,default = <<"">>},
+                    #attr{name = <<"type">>,default = <<"">>}
+                    ]}).
+
+-xml(profile_update,
+     #elem{name = <<"profile_update">>,
+           xmlns = <<"urn:xmpp:receipts">>,
+	   module = 'profile_update',
+           result = {profile_update, '$vcard'},
+           attrs = [#attr{name = <<"vcard">>,default = <<"">>}
+                    ]}).
+
 -xml(last,
      #elem{name = <<"query">>,
            xmlns = <<"jabber:iq:last">>,
@@ -71,7 +439,7 @@
            xmlns = <<"jabber:iq:roster">>,
 	   module = rfc6121,
            result = {roster_item, '$jid', '$name',
-                     '$groups', '$subscription', '$ask', '$mix_channel'},
+                     '$groups', '$subscription', '$ask','$profiles',  '$mix_channel'},
            attrs = [#attr{name = <<"jid">>,
                           required = true,
                           dec = {jid, decode, []},
@@ -87,7 +455,9 @@
                           enc = {enc_enum, []},
                           dec = {dec_enum, [[subscribe]]}}],
            refs = [#ref{name = roster_group, label = '$groups'},
-                   #ref{name = mix_roster_channel, label = '$mix_channel', min = 0, max = 1}]}).
+                   #ref{name = mix_roster_channel, label = '$mix_channel', min = 0, max = 1},
+                    #ref{name = roster_profile, label = '$profiles'}
+                   ]}).
 
 -xml(roster_query,
      #elem{name = <<"query">>,
@@ -96,8 +466,100 @@
            result = {roster_query, '$items', '$ver', '$mix_annotate'},
            attrs = [#attr{name = <<"ver">>, default = undefined}],
            refs = [#ref{name = roster_item, label = '$items'},
-                   #ref{name = mix_roster_annotate, label = '$mix_annotate',
-                        default = false, min = 0, max = 1}]}).
+                              #ref{name = mix_roster_annotate, label = '$mix_annotate',
+                                   default = false, min = 0, max = 1}]}).
+
+ -xml(roster_profile,
+      #elem{name = <<"profile">>,
+            xmlns = <<"jabber:iq:roster">>,
+ 	   module = 'rfc6121',
+            result = {roster_profile, '$vCard'},
+            refs = [#ref{name = roster_vcard, label = '$vCard'}
+                    ]}).
+
+
+ -xml(roster_vcard,
+       #elem{name = <<"vCard">>,
+             xmlns = <<"jabber:iq:roster">>,
+  	   module = 'rfc6121',
+             result = {roster_vcard, '$roster_vcard','$roster_nickname','$roster_status','$roster_mobilenumber','$roster_coverimg','$roster_designation','$roster_name','$roster_image','$roster_email','$roster_notification'},
+                             cdata = #cdata{default = <<"">>, label = '$roster_vcard'},
+                             refs = [#ref{name = roster_nickname, label = '$roster_nickname'},
+                             #ref{name = roster_name, label = '$roster_name'},
+                             #ref{name = roster_image, label = '$roster_image'},
+                             #ref{name = roster_email, label = '$roster_email'},
+                             #ref{name = roster_mobilenumber, label = '$roster_mobilenumber'},
+                             #ref{name = roster_notification, label = '$roster_notification'},
+                             #ref{name = roster_coverimg, label = '$roster_coverimg'},
+                             #ref{name = roster_designation, label = '$roster_designation'},
+                             #ref{name = roster_status, label = '$roster_status'}
+                   ]}).
+
+
+   -xml(roster_nickname,
+          #elem{name = <<"nickName">>,
+                xmlns = <<"jabber:iq:roster">>,
+     	   module = 'rfc6121',
+                result = {roster_nickname, '$roster_nickname'},
+                cdata = #cdata{default = <<"">>, label = '$roster_nickname'}}).
+
+    -xml(roster_image,
+           #elem{name = <<"image">>,
+                 xmlns = <<"jabber:iq:roster">>,
+      	   module = 'rfc6121',
+                 result = {roster_image, '$roster_image'},
+                 cdata = #cdata{default = <<"">>, label = '$roster_image'}}).
+
+   -xml(roster_name,
+          #elem{name = <<"name">>,
+                xmlns = <<"jabber:iq:roster">>,
+     	   module = 'rfc6121',
+                result = {roster_name, '$roster_name'},
+                cdata = #cdata{default = <<"">>, label = '$roster_name'}}).
+
+   -xml(roster_mobilenumber,
+             #elem{name = <<"mobileNumber">>,
+                   xmlns = <<"jabber:iq:roster">>,
+        	   module = 'rfc6121',
+                   result = {roster_mobilenumber, '$roster_mobilenumber'},
+                   cdata = #cdata{default = <<"">>, label = '$roster_mobilenumber'}}).
+
+   -xml(roster_coverimg,
+             #elem{name = <<"coverimg">>,
+                   xmlns = <<"jabber:iq:roster">>,
+        	   module = 'rfc6121',
+                   result = {roster_coverimg, '$roster_coverimg'},
+                   cdata = #cdata{default = <<"">>, label = '$roster_coverimg'}}).
+
+   -xml(roster_status,
+              #elem{name = <<"status">>,
+                    xmlns = <<"jabber:iq:roster">>,
+         	   module = 'rfc6121',
+                    result = {roster_status, '$roster_status'},
+                    cdata = #cdata{default = <<"">>, label = '$roster_status'}}).
+
+     -xml(roster_notification,
+              #elem{name = <<"notificationstatus">>,
+                    xmlns = <<"jabber:iq:roster">>,
+         	   module = 'rfc6121',
+                    result = {roster_notification, '$roster_notification'},
+                    cdata = #cdata{default = <<"">>, label = '$roster_notification'}}).
+
+   -xml(roster_designation,
+              #elem{name = <<"designation">>,
+                    xmlns = <<"jabber:iq:roster">>,
+         	   module = 'rfc6121',
+                    result = {roster_designation, '$roster_designation'},
+                    cdata = #cdata{default = <<"">>, label = '$roster_designation'}}).
+
+   -xml(roster_email,
+                #elem{name = <<"email">>,
+                      xmlns = <<"jabber:iq:roster">>,
+           	   module = 'rfc6121',
+                      result = {roster_email, '$roster_email'},
+                      cdata = #cdata{default = <<"">>, label = '$roster_email'}}).
+
+
 
 -xml(rosterver_feature,
      #elem{name = <<"ver">>,
@@ -426,6 +888,7 @@
              type :: iq_type(),
              lang = <<>> :: binary(),
              from :: undefined | jid:jid(),
+             from_jid :: undefined | jid:jid(),
              to :: undefined | jid:jid(),
              sub_els = [] :: [xmpp_element() | fxml:xmlel()],
 	     meta = #{} :: map()}).
@@ -436,7 +899,7 @@
            xmlns = [<<"jabber:client">>, <<"jabber:server">>,
 		    <<"jabber:component:accept">>],
 	   module = rfc6120,
-           result = {iq, '$id', '$type', '$lang', '$from', '$to', '$_els', '$_'},
+           result = {iq, '$id', '$type', '$lang', '$from','$from_jid', '$to', '$_els', '$_'},
            attrs = [#attr{name = <<"id">>,
                           required = true},
                     #attr{name = <<"type">>,
@@ -446,6 +909,9 @@
                     #attr{name = <<"from">>,
                           dec = {jid, decode, []},
                           enc = {jid, encode, []}},
+                     #attr{name = <<"from_jid">>,
+                           dec = {jid, decode, []},
+                           enc = {jid, encode, []}},
                     #attr{name = <<"to">>,
                           dec = {jid, decode, []},
                           enc = {jid, encode, []}},
@@ -519,7 +985,8 @@
                           label = '$lang'}],
            refs = [#ref{name = message_subject, label = '$subject'},
                    #ref{name = message_thread, min = 0, max = 1, label = '$thread'},
-                   #ref{name = message_body, label = '$body'}]}).
+                   #ref{name = message_body, label = '$body'}
+                   ]}).
 
 -xml(presence_show,
      #elem{name = <<"show">>,
@@ -723,13 +1190,17 @@
            xmlns = [<<"jabber:client">>, <<"jabber:server">>,
 		    <<"jabber:component:accept">>],
 	   module = rfc6120,
-           result = {stanza_error, '$type', '$by', '$reason', '$text', '$_els'},
+           result = {stanza_error, '$type', '$code', '$by', '$reason', '$text', '$_els'},
            attrs = [#attr{name = <<"type">>,
                           label = '$type',
                           required = true,
                           dec = {dec_enum, [[auth, cancel, continue,
                                              modify, wait]]},
                           enc = {enc_enum, []}},
+		    #attr{name = <<"code">>,
+			  label = '$code',
+			  enc = {enc_int, []},
+                          dec = {dec_int, [0, infinity]}},
                     #attr{name = <<"by">>,
 			  label = '$by',
 			  enc = {jid, encode, []},
@@ -1824,6 +2295,55 @@
                    #ref{name = vcard_ORGUNIT,
                         label = '$units'}]}).
 
+-xml(vcard_status,
+     #elem{name = <<"status">>,
+           xmlns = <<"vcard-temp">>,
+	   module = 'xep0054',
+            result = {vcard_status, '$vcard_status'},
+               cdata = #cdata{default = <<"">>, label = '$vcard_status'}}).
+-xml(vcard_image,
+     #elem{name = <<"image">>,
+           xmlns = <<"vcard-temp">>,
+	   module = 'xep0054',
+           result = {vcard_image, '$vcard_image'},
+              cdata = #cdata{default = <<"">>, label = '$vcard_image'}}).
+
+-xml(vcard_mobile_number,
+     #elem{name = <<"mobileNumber">>,
+           xmlns = <<"vcard-temp">>,
+	   module = 'xep0054',
+          result = {vcard_mobile_number, '$vcard_mobile_number'},
+              cdata = #cdata{default = <<"">>, label = '$vcard_mobile_number'}}).
+
+-xml(vcard_designation,
+     #elem{name = <<"designation">>,
+           xmlns = <<"vcard-temp">>,
+	   module = 'xep0054',
+          result = {vcard_designation, '$vcard_designation'},
+              cdata = #cdata{default = <<"">>, label = '$vcard_designation'}}).
+
+-xml(vcard_coverimg,
+     #elem{name = <<"coverimg">>,
+           xmlns = <<"vcard-temp">>,
+	   module = 'xep0054',
+          result = {vcard_coverimg, '$vcard_coverimg'},
+              cdata = #cdata{default = <<"">>, label = '$vcard_coverimg'}}).
+
+-xml(vcard_emailid,
+     #elem{name = <<"email">>,
+           xmlns = <<"vcard-temp">>,
+	   module = 'xep0054',
+          result = {vcard_emailid, '$vcard_email'},
+              cdata = #cdata{default = <<"">>, label = '$vcard_email'}}).
+
+-xml(vcard_nickName,
+     #elem{name = <<"nickName">>,
+           xmlns = <<"vcard-temp">>,
+	   module = 'xep0054',
+          result = {vcard_nickName, '$vcard_nickName'},
+              cdata = #cdata{default = <<"">>, label = '$vcard_nickName'}}).
+
+
 -xml(vcard_SOUND,
      #elem{name = <<"SOUND">>,
            xmlns = <<"vcard-temp">>,
@@ -1872,7 +2392,7 @@
            result = {vcard_temp, '$version', '$fn', '$n', '$nickname', '$photo',
                      '$bday', '$adr', '$label', '$tel', '$email', '$jabberid',
                      '$mailer', '$tz', '$geo', '$title', '$role', '$logo',
-                     '$org', '$categories', '$note', '$prodid', %% '$agent',
+                     '$org','$vcard_status','$vcard_mobile_number','$vcard_designation','$vcard_coverimg','$vcard_image','$vcard_emailid','$vcard_nickName', '$categories', '$note', '$prodid', %% '$agent',
                      '$rev', '$sort_string', '$sound', '$uid', '$url', '$class',
                      '$key', '$desc', '$_els'},
            refs = [#ref{name = vcard_N, min = 0, max = 1, label = '$n'},
@@ -1884,6 +2404,13 @@
                    #ref{name = vcard_LOGO, min = 0, max = 1, label = '$logo'},
                    #ref{name = vcard_PHOTO, min = 0, max = 1, label = '$photo'},
                    #ref{name = vcard_ORG, min = 0, max = 1, label = '$org'},
+                   #ref{name = vcard_status, min = 0, max = 1, label = '$vcard_status'},
+                   #ref{name = vcard_mobile_number, min = 0, max = 1, label = '$vcard_mobile_number'},
+                   #ref{name = vcard_designation, min = 0, max = 1, label = '$vcard_designation'},
+                   #ref{name = vcard_coverimg, min = 0, max = 1, label = '$vcard_coverimg'},
+                   #ref{name = vcard_image, min = 0, max = 1, label = '$vcard_image'},
+                   #ref{name = vcard_emailid, min = 0, max = 1, label = '$vcard_emailid'},
+                   #ref{name = vcard_nickName, min = 0, max = 1, label = '$vcard_nickName'},
                    #ref{name = vcard_SOUND, min = 0, max = 1, label = '$sound'},
                    #ref{name = vcard_KEY, min = 0, max = 1, label = '$key'},
                    #ref{name = vcard_VERSION, min = 0, max = 1, label = '$version'},
@@ -2108,10 +2635,12 @@
 		    <<"http://jabber.org/protocol/pubsub#event">>],
 	   module = 'xep0060',
 	   ignore_els = true,
-           result = {ps_item, '$xmlns', '$id', '$_els', '$node', '$publisher'},
+           result = {ps_item, '$xmlns', '$id', '$_els', '$node', '$publisher', '$usernick', '$sendernick'},
            attrs = [#attr{name = <<"id">>},
 		    #attr{name = <<"xmlns">>},
                     #attr{name = <<"node">>},
+                    #attr{name = <<"usernick">>},
+                    #attr{name = <<"sendernick">>},
                     #attr{name = <<"publisher">>}]}).
 
 -xml(pubsub_items,
@@ -3516,13 +4045,17 @@
      #elem{name = <<"join">>,
 	   xmlns = [<<"urn:xmpp:mix:core:0">>, <<"urn:xmpp:mix:core:1">>],
 	   module = 'xep0369',
-	   result = {mix_join, '$id', '$jid', '$nick', '$subscribe', '$xmlns'},
+	   result = {mix_join, '$id', '$jid', '$nick', '$subscribe','$xmlns','$owner','$usernick','$sendernick', '$request_type'},
 	   attrs = [#attr{name = <<"id">>},
 		    #attr{name = <<"jid">>,
 			  label = '$jid',
 			  dec = {jid, decode, []},
                           enc = {jid, encode, []}},
-		    #attr{name = <<"xmlns">>}],
+		    #attr{name = <<"xmlns">>,default = <<"urn:xmpp:mix:core:0">>},
+		    #attr{name = <<"owner">>,default = <<"">>},
+              #attr{name = <<"usernick">>,default = <<"">>},
+              #attr{name = <<"sendernick">>,default = <<"">>},
+              #attr{name = <<"request_type">>,default = <<"">>}],
 	   refs = [#ref{name = mix_subscribe, min = 0, label = '$subscribe'},
 		   #ref{name = mix_nick,
 			default = <<"">>,
@@ -3533,8 +4066,9 @@
      #elem{name = <<"client-join">>,
 	   xmlns = [<<"urn:xmpp:mix:pam:0">>, <<"urn:xmpp:mix:pam:2">>],
 	   module = 'xep0405',
-	   result = {mix_client_join, '$channel', '$join', '$xmlns'},
-	   attrs = [#attr{name = <<"channel">>,
+	   result = {mix_client_join, '$channel', '$join', '$xmlns','$affiliation'},
+	   attrs = [#attr{name = <<"affiliation">>,default = <<"">>},
+	   #attr{name = <<"channel">>,
 			  dec = {jid, decode, []},
 			  enc = {jid, encode, []}},
 		    #attr{name = <<"xmlns">>}],
@@ -3562,7 +4096,7 @@
      #elem{name = <<"participant">>,
 	   xmlns = [<<"urn:xmpp:mix:core:0">>, <<"urn:xmpp:mix:core:1">>],
 	   module = 'xep0369',
-	   result = {mix_participant, '$jid', '$nick', '$xmlns'},
+	   result = {mix_participant, '$jid', '$nick', '$xmlns', '$usernick','$sendernick', '$request_type'},
 	   attrs = [#attr{name = <<"jid">>,
 			  required = true,
 			  label = '$jid',
@@ -3570,7 +4104,13 @@
                           enc = {jid, encode, []}},
 		    #attr{name = <<"nick">>,
 			  label = '$nick'},
-		    #attr{name = <<"xmlns">>}]}).
+			  #attr{name = <<"xmlns">>},
+               #attr{name = <<"sendernick">>,
+			  label = '$sendernick'},
+                 #attr{name = <<"request_type">>,
+			  label = '$request_type'},
+              #attr{name = <<"usernick">>,
+			  label = '$usernick'}]}).
 
 -xml(mix_create,
      #elem{name = <<"create">>,
