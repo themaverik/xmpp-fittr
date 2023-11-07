@@ -333,9 +333,12 @@ record(group_query, {status = <<>> :: binary(),
      #elem{name = <<"seen">>,
            xmlns = <<"urn:xmpp:receipts">>,
 	   module = 'seen',
-           result = {seen, '$id', '$time'},
-           attrs = [#attr{name = <<"id">>,default = <<"">>},
-                    #attr{name = <<"time">>,default = <<"">>}]}).
+           result = {seen, '$id', '$time', '$chat_type', '$conversation_jid'},
+           attrs = [#attr{name = <<"id">>, default = <<"">>},
+                    #attr{name = <<"time">>, default = <<"">>},
+                    #attr{name = <<"chat_type">>, default = <<"">>},
+                    #attr{name = <<"conversation_jid">>, default = <<"">>}
+                    ]}).
 
 
 -xml(logout,

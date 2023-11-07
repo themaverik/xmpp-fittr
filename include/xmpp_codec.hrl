@@ -1471,7 +1471,9 @@
 -type stanza_error() :: #stanza_error{}.
 
 -record(seen, {id = <<>> :: binary(),
-               time = <<>> :: binary()}).
+               time = <<>> :: binary(),
+               chat_type = <<>> :: binary(),
+               conversation_jid = <<>> :: binary()}).
 -type seen() :: #seen{}.
 
 -record(stream_error, {reason :: atom() | #'see-other-host'{},

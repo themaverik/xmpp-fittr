@@ -2028,7 +2028,6 @@ get_mod({jingle_ibb_transport, _, _, _}) -> xep0261;
 get_mod({group_subscription, _, _}) -> mix_group_chat;
 get_mod({user_activities, _, _, _, _, _}) ->
     del_message_activities;
-get_mod({seen, _, _}) -> seen;
 get_mod({muc_decline, _, _, _}) -> xep0045;
 get_mod({sm_enable, _, _, _}) -> xep0198;
 get_mod({offline, _, _, _}) -> xep0013;
@@ -2130,6 +2129,7 @@ get_mod({push_enable, _, _, _}) -> xep0357;
 get_mod({jingle_ft_range, _, _, _}) -> xep0234;
 get_mod({db_result, _, _, _, _, _}) -> xep0220;
 get_mod({call, _, _, _, _, _, _}) -> call;
+get_mod({seen, _, _, _, _}) -> seen;
 get_mod({bookmark_conference, _, _, _, _, _}) ->
     xep0048;
 get_mod({vcard_name, _, _, _, _, _}) -> xep0054;
