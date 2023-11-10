@@ -545,9 +545,6 @@
                error :: 'undefined' | #stat_error{}}).
 -type stat() :: #stat{}.
 
--record(addresses, {list = [] :: [#address{}]}).
--type addresses() :: #addresses{}.
-
 -record(reactions, {msgid = <<>> :: binary()}).
 -type reactions() :: #reactions{}.
 
@@ -559,6 +556,9 @@
 
 -record(users, {user = [] :: [#buser{}]}).
 -type users() :: #users{}.
+
+-record(addresses, {list = [] :: [#address{}]}).
+-type addresses() :: #addresses{}.
 
 -record(starttls, {required = false :: boolean()}).
 -type starttls() :: #starttls{}.
@@ -675,6 +675,14 @@
 
 -record(block, {items = [] :: [#block_item{}]}).
 -type block() :: #block{}.
+
+-record(recentchat_item, {type = <<>> :: binary(),
+                          value = <<>> :: binary()}).
+-type recentchat_item() :: #recentchat_item{}.
+
+-record(recentchat_item_list, {name = <<>> :: binary(),
+                               items = [] :: [#recentchat_item{}]}).
+-type recentchat_item_list() :: #recentchat_item_list{}.
 
 -record(disco_item, {jid :: jid:jid(),
                      name = <<>> :: binary(),
@@ -1709,6 +1717,8 @@
                         recall() |
                         receipt_request() |
                         receipt_response() |
+                        recentchat_item() |
+                        recentchat_item_list() |
                         redirect() |
                         register() |
                         report() |

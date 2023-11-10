@@ -187,6 +187,22 @@ record(group_query, {status = <<>> :: binary(),
                               #attr{name = <<"status">>,default = <<"">>}],
                        cdata = #cdata{default = <<"">>, label = '$result_type'}}).
 
+-xml(recentchat_item,
+     #elem{name = <<"item">>,
+           xmlns = <<"jabber:iq:recentchat:0">>,
+           result = {recentchat_item, '$type', '$value'},
+           attrs = [#attr{name = <<"type">>},
+                    #attr{name = <<"value">>}]}).
+
+-xml(recentchat_item_list,
+     #elem{name = <<"list">>,
+           xmlns = <<"jabber:iq:recentchat:0">>,
+           result = {recentchat_item_list, '$name', '$items'},
+           attrs = [#attr{name = <<"name">>,
+                          required = true}],
+           refs = [#ref{name = recentchat_item,
+                        label = '$items'}]}).
+
 -xml(user_activities,
      #elem{name = <<"query">>,
            xmlns = <<"jabber:iq:user_activities">>,
