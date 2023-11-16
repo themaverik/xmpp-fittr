@@ -1022,6 +1022,15 @@
 -record(vcard_nickName, {vcard_nickName = <<>> :: binary()}).
 -type vcard_nickName() :: #vcard_nickName{}.
 
+-record(seen_message, {id = <<>> :: binary(),
+                       time = <<>> :: binary()}).
+-type seen_message() :: #seen_message{}.
+
+-record(seen_messages, {chat_type = <<>> :: binary(),
+                        conversation_jid = <<>> :: binary(),
+                        items = [] :: [#seen_message{}]}).
+-type seen_messages() :: #seen_messages{}.
+
 -record(delegated, {ns = <<>> :: binary(),
                     attrs = [] :: [binary()]}).
 -type delegated() :: #delegated{}.
@@ -1749,6 +1758,8 @@
                         search_item() |
                         'see-other-host'() |
                         seen() |
+                        seen_message() |
+                        seen_messages() |
                         service() |
                         services() |
                         shim() |

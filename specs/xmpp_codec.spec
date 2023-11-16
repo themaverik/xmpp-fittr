@@ -356,6 +356,28 @@ record(group_query, {status = <<>> :: binary(),
                     #attr{name = <<"conversation_jid">>, default = <<"">>}
                     ]}).
 
+-xml(seen_message,
+    #elem{name = <<"seen_message">>,
+        xmlns = <<"urn:xmpp:receipts:1">>,
+        module = 'seen',
+        attrs = [
+            #attr{name = <<"id">>, default = <<"">>},
+            #attr{name = <<"time">>, default = <<"">>}
+        ],
+	    result = {seen_message, '$id', '$time'}
+   }).
+
+-xml(seen_messages,
+     #elem{name = <<"seen_messages">>,
+        xmlns = <<"urn:xmpp:receipts:1">>,
+        module = 'seen',
+        result = {seen_messages, '$chat_type', '$conversation_jid', '$items'},
+        attrs = [
+            #attr{name = <<"chat_type">>, default = <<"">>},
+            #attr{name = <<"conversation_jid">>, default = <<"">>}
+        ],
+        refs = [#ref{name = seen_message, label = '$items'}]
+    }).
 
 -xml(logout,
      #elem{name = <<"logout">>,

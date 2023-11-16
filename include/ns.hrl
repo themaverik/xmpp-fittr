@@ -167,6 +167,7 @@
 -define(NS_THUMBS_1, <<"urn:xmpp:thumbs:1">>).
 -define(NS_NICK,  <<"http://jabber.org/protocol/nick">>).
 -define(NS_RECEIPTS, <<"urn:xmpp:receipts">>).
+-define(NS_RECEIPTS_1, <<"urn:xmpp:receipts:1">>).
 -define(NS_CHAT_MARKERS_0, <<"urn:xmpp:chat-markers:0">>).
 -define(NS_REPORTING_0, <<"urn:xmpp:reporting:0">>).
 -define(NS_REPORTING_REASON_ABUSE_0, <<"urn:xmpp:reporting:reason:abuse:0">>).

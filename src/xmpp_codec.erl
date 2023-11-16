@@ -654,6 +654,9 @@ get_mod(<<"not-subscribed">>,
 get_mod(<<"size">>,
         <<"urn:xmpp:jingle:apps:file-transfer:5">>) ->
     xep0234;
+get_mod(<<"seen_messages">>,
+        <<"urn:xmpp:receipts:1">>) ->
+    seen;
 get_mod(<<"query">>,
         <<"http://jabber.org/protocol/stats">>) ->
     xep0039;
@@ -887,6 +890,9 @@ get_mod(<<"subscription">>, <<"urn:xmpp:mucsub:0">>) ->
 get_mod(<<"item">>, <<"jabber:iq:search">>) -> xep0055;
 get_mod(<<"stream:stream">>, <<"jabber:server">>) ->
     rfc6120;
+get_mod(<<"seen_message">>,
+        <<"urn:xmpp:receipts:1">>) ->
+    seen;
 get_mod(<<"proceed">>,
         <<"urn:ietf:params:xml:ns:xmpp-tls">>) ->
     rfc6120;
@@ -1905,6 +1911,7 @@ get_mod({mam_archived, _, _}) -> xep0313;
 get_mod({delegated, _, _}) -> xep0355;
 get_mod({text, _, _}) -> xep0234;
 get_mod({muc_hat, _, _}) -> xep0317;
+get_mod({seen_message, _, _}) -> seen;
 get_mod({xmpp_session, _}) -> rfc3921;
 get_mod({ping}) -> xep0199;
 get_mod({time, _, _}) -> xep0202;
@@ -2119,6 +2126,7 @@ get_mod({'see-other-host', _}) -> rfc6120;
 get_mod({vcard_emailid, _}) -> xep0054;
 get_mod({muc_destroy, _, _, _, _}) -> xep0045;
 get_mod({hint, _}) -> xep0334;
+get_mod({seen_messages, _, _, _}) -> seen;
 get_mod({roster_profile, _}) -> rfc6121;
 get_mod({roster_vcard, _, _, _, _, _, _, _, _, _, _}) ->
     rfc6121;
