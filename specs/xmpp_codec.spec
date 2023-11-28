@@ -362,21 +362,32 @@ record(group_query, {status = <<>> :: binary(),
         module = 'seen',
         attrs = [
             #attr{name = <<"id">>, default = <<"">>},
+            #attr{name = <<"jid">>, default = <<"">>},
             #attr{name = <<"time">>, default = <<"">>}
         ],
-	    result = {seen_message, '$id', '$time'}
+	    result = {seen_message, '$id', '$jid', '$time'}
    }).
 
 -xml(seen_messages,
      #elem{name = <<"seen_messages">>,
         xmlns = <<"urn:xmpp:receipts:1">>,
         module = 'seen',
-        result = {seen_messages, '$chat_type', '$conversation_jid', '$items'},
+        result = {seen_messages, '$chat_type', '$items'},
         attrs = [
-            #attr{name = <<"chat_type">>, default = <<"">>},
-            #attr{name = <<"conversation_jid">>, default = <<"">>}
+            #attr{name = <<"chat_type">>, default = <<"">>}
         ],
         refs = [#ref{name = seen_message, label = '$items'}]
+    }).
+
+-xml(acknowledgements,
+     #elem{name = <<"acknowledgements">>,
+        xmlns = <<"urn:xmpp:receipts:1">>,
+        module = 'acknowledge',
+        result = {acknowledgements, '$chat_type', '$items'},
+        attrs = [
+            #attr{name = <<"chat_type">>, default = <<"">>}
+        ],
+        refs = [#ref{name = acknowledge, label = '$items'}]
     }).
 
 -xml(logout,
@@ -401,7 +412,6 @@ record(group_query, {status = <<>> :: binary(),
            result = {timestampmsg, '$id', '$time'},
            attrs = [#attr{name = <<"id">>,default = <<"">>},
                     #attr{name = <<"time">>,default = <<"">>}]}).
-
 
 -xml(acknowledge,
      #elem{name = <<"acknowledge">>,

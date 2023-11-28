@@ -763,6 +763,10 @@
 -record(muc_admin, {items = [] :: [#muc_item{}]}).
 -type muc_admin() :: #muc_admin{}.
 
+-record(acknowledgements, {chat_type = <<>> :: binary(),
+                           items = [] :: [#acknowledge{}]}).
+-type acknowledgements() :: #acknowledgements{}.
+
 -record(caps, {node = <<>> :: binary(),
                version = <<>> :: binary(),
                hash = <<>> :: binary(),
@@ -1023,11 +1027,11 @@
 -type vcard_nickName() :: #vcard_nickName{}.
 
 -record(seen_message, {id = <<>> :: binary(),
+                       jid = <<>> :: binary(),
                        time = <<>> :: binary()}).
 -type seen_message() :: #seen_message{}.
 
 -record(seen_messages, {chat_type = <<>> :: binary(),
-                        conversation_jid = <<>> :: binary(),
                         items = [] :: [#seen_message{}]}).
 -type seen_messages() :: #seen_messages{}.
 
@@ -1552,6 +1556,7 @@
 -type vcard_temp() :: #vcard_temp{}.
 
 -type xmpp_element() :: acknowledge() |
+                        acknowledgements() |
                         address() |
                         addresses() |
                         adhoc_actions() |

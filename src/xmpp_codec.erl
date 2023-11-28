@@ -356,28 +356,22 @@ get_mod(<<"displayed">>, <<"jabber:x:event">>) ->
 get_mod(<<"start">>, <<"urn:xmpp:mam:tmp">>) -> xep0313;
 get_mod(<<"general-error">>, <<"urn:xmpp:jingle:1">>) ->
     xep0166;
+get_mod(<<"acknowledgements">>,
+        <<"urn:xmpp:receipts:1">>) ->
+    acknowledge;
 get_mod(<<"x">>, <<"vcard-temp:x:update">>) -> xep0153;
 get_mod(<<"purge">>,
         <<"http://jabber.org/protocol/pubsub">>) ->
     xep0060;
 get_mod(<<"with">>, <<"urn:xmpp:mam:tmp">>) -> xep0313;
 get_mod(<<"address">>, <<"urn:xmpp:sic:0">>) -> xep0279;
-get_mod(<<"profile">>, <<"jabber:iq:roster">>) ->
-    rfc6121;
 get_mod(<<"failure">>,
         <<"urn:ietf:params:xml:ns:xmpp-sasl">>) ->
     rfc6120;
 get_mod(<<"PRIVATE">>, <<"vcard-temp">>) -> xep0054;
-get_mod(<<"options">>,
-        <<"http://jabber.org/protocol/pubsub">>) ->
-    xep0060;
 get_mod(<<"pubsub">>,
         <<"http://jabber.org/protocol/pubsub">>) ->
     xep0060;
-get_mod(<<"disable">>, <<"urn:xmpp:carbons:2">>) ->
-    xep0280;
-get_mod(<<"mix">>, <<"urn:xmpp:mix:presence:0">>) ->
-    xep0403;
 get_mod(<<"broadcastname">>,
         <<"jabber:iq:mod_broadcast">>) ->
     broadcast;
@@ -1773,6 +1767,15 @@ get_mod(<<"internal-server-error">>,
 get_mod(<<"put">>,
         <<"eu:siacs:conversations:http:upload">>) ->
     xep0363;
+get_mod(<<"profile">>, <<"jabber:iq:roster">>) ->
+    rfc6121;
+get_mod(<<"options">>,
+        <<"http://jabber.org/protocol/pubsub">>) ->
+    xep0060;
+get_mod(<<"disable">>, <<"urn:xmpp:carbons:2">>) ->
+    xep0280;
+get_mod(<<"mix">>, <<"urn:xmpp:mix:presence:0">>) ->
+    xep0403;
 get_mod(Name, XMLNS) ->
     xmpp_codec_external:lookup(Name, XMLNS).
 
@@ -1898,6 +1901,7 @@ get_mod({vcard_label, _, _, _, _, _, _, _, _}) ->
     xep0054;
 get_mod({x509_challenge_failed}) -> xep0417;
 get_mod({user_fav, _, _, _, _, _, _, _}) -> user_fav;
+get_mod({acknowledgements, _, _}) -> acknowledge;
 get_mod({roster_email, _}) -> rfc6121;
 get_mod({stats, _, _}) -> xep0039;
 get_mod({muc, _, _}) -> xep0045;
@@ -1911,7 +1915,6 @@ get_mod({mam_archived, _, _}) -> xep0313;
 get_mod({delegated, _, _}) -> xep0355;
 get_mod({text, _, _}) -> xep0234;
 get_mod({muc_hat, _, _}) -> xep0317;
-get_mod({seen_message, _, _}) -> seen;
 get_mod({xmpp_session, _}) -> rfc3921;
 get_mod({ping}) -> xep0199;
 get_mod({time, _, _}) -> xep0202;
@@ -2064,6 +2067,7 @@ get_mod({jingle_ibb_transport, _, _, _}) -> xep0261;
 get_mod({group_subscription, _, _}) -> mix_group_chat;
 get_mod({user_activities, _, _, _, _, _}) ->
     del_message_activities;
+get_mod({seen_message, _, _, _}) -> seen;
 get_mod({muc_decline, _, _, _}) -> xep0045;
 get_mod({sm_enable, _, _, _}) -> xep0198;
 get_mod({offline, _, _, _}) -> xep0013;
@@ -2091,6 +2095,7 @@ get_mod({stream_error, _, _}) -> rfc6120;
 get_mod({inbox_entry, _, _, _}) -> xep0430;
 get_mod({receipt_request}) -> xep0184;
 get_mod({upload_request_0, _, _, _, _}) -> xep0363;
+get_mod({seen_messages, _, _}) -> seen;
 get_mod({privacy_item, _, _, _, _, _, _, _, _}) ->
     xep0016;
 get_mod({starttls_failure}) -> rfc6120;
@@ -2126,7 +2131,6 @@ get_mod({'see-other-host', _}) -> rfc6120;
 get_mod({vcard_emailid, _}) -> xep0054;
 get_mod({muc_destroy, _, _, _, _}) -> xep0045;
 get_mod({hint, _}) -> xep0334;
-get_mod({seen_messages, _, _, _}) -> seen;
 get_mod({roster_profile, _}) -> rfc6121;
 get_mod({roster_vcard, _, _, _, _, _, _, _, _, _, _}) ->
     rfc6121;
